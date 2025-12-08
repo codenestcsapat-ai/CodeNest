@@ -1644,7 +1644,7 @@ a {
 }
 
 .footer-links a {
-    color: #94A3B8;
+    color: #E2E8F0; /* lighter for better contrast on dark footer */
     transition: color var(--transition-base);
 }
 
@@ -1664,7 +1664,7 @@ a {
 }
 
 .footer-copyright {
-    color: #64748B;
+    color: #E2E8F0; /* increase contrast for copyright text */
 }
 
 .footer-lang {

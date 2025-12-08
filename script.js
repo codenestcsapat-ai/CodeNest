@@ -1090,59 +1090,68 @@ document.addEventListener("DOMContentLoaded", () => {
   const cMarketing = document.getElementById("cookie-marketing");
 
   const saved = localStorage.getItem("cookieConsent");
+    if (!saved && banner) banner.classList.remove("hidden");
 
-  if (!saved) banner.classList.remove("hidden");
+    // Open modal
+    if (btnSettings) {
+        btnSettings.addEventListener("click", () => {
+            if (modal) modal.classList.remove("hidden");
+        });
+    }
 
-  // Open modal
-  btnSettings.addEventListener("click", () => {
-    modal.classList.remove("hidden");
-  });
+    // Close modal
+    if (btnClose) {
+        btnClose.addEventListener("click", () => {
+            if (modal) modal.classList.add("hidden");
+        });
+    }
 
-  // Close modal
-  btnClose.addEventListener("click", () => {
-    modal.classList.add("hidden");
-  });
+    // Accept only essential
+    if (btnEssential) {
+        btnEssential.addEventListener("click", () => {
+            saveConsent({
+                essential: true,
+                functional: false,
+                analytics: false,
+                marketing: false
+            });
+        });
+    }
 
-  // Accept only essential
-  btnEssential.addEventListener("click", () => {
-    saveConsent({
-      essential: true,
-      functional: false,
-      analytics: false,
-      marketing: false
-    });
-  });
+    // Accept all
+    if (btnAll) {
+        btnAll.addEventListener("click", () => {
+            saveConsent({
+                essential: true,
+                functional: true,
+                analytics: true,
+                marketing: true
+            });
+        });
+    }
 
-  // Accept all
-  btnAll.addEventListener("click", () => {
-    saveConsent({
-      essential: true,
-      functional: true,
-      analytics: true,
-      marketing: true
-    });
-  });
+    // Save from modal
+    if (btnSave) {
+        btnSave.addEventListener("click", () => {
+            saveConsent({
+                essential: true,
+                functional: cFunctional ? !!cFunctional.checked : false,
+                analytics: cAnalytics ? !!cAnalytics.checked : false,
+                marketing: cMarketing ? !!cMarketing.checked : false
+            });
+        });
+    }
 
-  // Save from modal
-  btnSave.addEventListener("click", () => {
-    saveConsent({
-      essential: true,
-      functional: cFunctional.checked,
-      analytics: cAnalytics.checked,
-      marketing: cMarketing.checked
-    });
-  });
+    function saveConsent(data) {
+        localStorage.setItem("cookieConsent", JSON.stringify(data));
 
-  function saveConsent(data) {
-    localStorage.setItem("cookieConsent", JSON.stringify(data));
+        if (banner) banner.classList.add("hidden");
+        if (modal) modal.classList.add("hidden");
 
-    banner.classList.add("hidden");
-    modal.classList.add("hidden");
+        console.log("Cookie preferences saved:", data);
 
-    console.log("Cookie preferences saved:", data);
-
-    loadAllowedScripts(data);
-  }
+        loadAllowedScripts(data);
+    }
 
   // Optional: Blocking & loading cookies based on consent
   function loadAllowedScripts(consent) {
