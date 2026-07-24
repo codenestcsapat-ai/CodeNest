@@ -112,7 +112,7 @@
             ctaTitle: 'Ready to start your project?',
             ctaSubtitle: 'Get in touch with us and let\'s discuss how we can help grow your business digitally.',
             emailLabel: 'Email',
-            emailValue: 'hello@codenest.hu',
+            emailValue: 'info.codenest.hu@gmail.com',
             phoneLabel: 'Phone',
             phoneValue: '+36 30 123 4567',
             formName: 'Name',
@@ -244,7 +244,7 @@
             ctaTitle: 'Készen állsz elkezdeni a projekted?',
             ctaSubtitle: 'Vedd fel velünk a kapcsolatot és beszéljük meg, hogyan segíthetünk digitálisan növelni üzleti sikereidet.',
             emailLabel: 'Email',
-            emailValue: 'hello@codenest.hu',
+            emailValue: 'info.codenest.hu@gmail.com',
             phoneLabel: 'Telefon',
             phoneValue: '+36 30 123 4567',
             formName: 'Név',
@@ -527,6 +527,9 @@
     const EMAILJS_PUBLIC_KEY = "l6VpSyq4uewrDcg_u";
     const EMAILJS_SERVICE_ID = "service_mkhy8en";
     const EMAILJS_TEMPLATE_ID = "template_hdly37v";
+    const EMAILJS_AUTO_RESPONSE_TEMPLATE_ID = "template_auto_response";
+    const INTERNAL_CONTACT_EMAIL = "codenest.csapat@gmail.com";
+    const PUBLIC_CONTACT_EMAIL = "info.codenest.hu@gmail.com";
 
     // EmailJS indítása
     if (typeof emailjs !== 'undefined') {
@@ -557,7 +560,7 @@ document.addEventListener("DOMContentLoaded", () => {
         contactForm.parentNode.appendChild(statusEl);
     }
 
-    contactForm.addEventListener("submit", function (e) {
+    contactForm.addEventListener("legacy-submit-disabled", function (e) {
         e.preventDefault();
 
         // Gomb tiltása küldés közben
@@ -718,6 +721,161 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 if (submitBtn) submitBtn.disabled = false;
             });
+    });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const contactForm = document.querySelector("#contact-form");
+    if (!contactForm) return;
+
+    const submitBtn = contactForm.querySelector('button[type="submit"]');
+    const submitBtnLabel = submitBtn ? submitBtn.querySelector("span") : null;
+    const statusEl = document.getElementById("status") || document.createElement("div");
+    let isSending = false;
+
+    statusEl.id = "status";
+    statusEl.setAttribute("role", "status");
+    statusEl.setAttribute("aria-live", "polite");
+    if (!statusEl.parentNode) {
+        statusEl.style.marginTop = "10px";
+        contactForm.parentNode.appendChild(statusEl);
+    }
+
+    const restoreSubmitButton = () => {
+        isSending = false;
+        if (submitBtn) submitBtn.disabled = false;
+        if (submitBtnLabel) {
+            submitBtnLabel.textContent = currentLang === "hu" ? "Ajánlatot kérek" : "Request a Quote";
+        }
+    };
+
+    const announce = (message) => {
+        const srAnnouncements = document.getElementById("sr-announcements");
+        if (srAnnouncements) srAnnouncements.textContent = message;
+    };
+
+    contactForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        if (isSending) return;
+
+        const nameInput = contactForm.querySelector('input[name="name"]');
+        const emailInput = contactForm.querySelector('input[name="email"]');
+        const projectInput = contactForm.querySelector('select[name="project"]');
+        const messageInput = contactForm.querySelector('textarea[name="message"]');
+        const fields = [nameInput, emailInput, projectInput, messageInput];
+        fields.forEach((field) => field.removeAttribute("aria-invalid"));
+
+        const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim());
+        const invalidFields = fields.filter((field) => !field.value.trim());
+        if (!isEmailValid && !invalidFields.includes(emailInput)) invalidFields.push(emailInput);
+
+        if (invalidFields.length) {
+            invalidFields.forEach((field) => field.setAttribute("aria-invalid", "true"));
+            const validationMessage = currentLang === "hu"
+                ? "Kérlek, töltsd ki a nevet, az érvényes e-mail címet, a projekt típusát és az üzenetet."
+                : "Please enter your name, a valid email, the project type, and a message.";
+            statusEl.style.color = "#b91c1c";
+            statusEl.textContent = validationMessage;
+            announce(validationMessage);
+            invalidFields[0].focus();
+            return;
+        }
+
+        const templateParams = {
+            from_name: nameInput.value.trim(),
+            from_email: emailInput.value.trim(),
+            reply_to: emailInput.value.trim(),
+            project_type: projectInput.value,
+            message: messageInput.value.trim(),
+            to_email: INTERNAL_CONTACT_EMAIL,
+            contact_email: PUBLIC_CONTACT_EMAIL,
+            // Compatibility aliases for the existing template.
+            name: nameInput.value.trim(),
+            email: emailInput.value.trim(),
+            project: projectInput.value
+        };
+
+        isSending = true;
+        if (submitBtn) submitBtn.disabled = true;
+        if (submitBtnLabel) {
+            submitBtnLabel.textContent = currentLang === "hu" ? "Küldés folyamatban…" : "Sending…";
+        }
+        const loadingMessage = currentLang === "hu" ? "Küldés folyamatban…" : "Sending…";
+        statusEl.style.color = "";
+        statusEl.textContent = loadingMessage;
+        announce(loadingMessage);
+
+        console.info("EmailJS send started", {
+            serviceId: EMAILJS_SERVICE_ID,
+            templateId: EMAILJS_TEMPLATE_ID,
+            fieldNames: Object.keys(templateParams)
+        });
+
+        const handleSendError = (error) => {
+            console.error("EmailJS send failed", {
+                serviceId: EMAILJS_SERVICE_ID,
+                templateId: EMAILJS_TEMPLATE_ID,
+                status: error && error.status,
+                text: error && error.text
+            });
+
+            const subject = encodeURIComponent("CodeNest kapcsolatfelvétel");
+            const body = encodeURIComponent(
+                `Név: ${templateParams.from_name}\nEmail: ${templateParams.from_email}\nProjekt: ${templateParams.project_type}\n\n${templateParams.message}`
+            );
+            const intro = currentLang === "hu"
+                ? "Valami nem sikerült az üzenet küldése közben. Kérlek, írj közvetlenül az "
+                : "Something went wrong while sending. Please email us directly at ";
+            statusEl.style.color = "#b91c1c";
+            statusEl.textContent = intro;
+            const fallbackLink = document.createElement("a");
+            fallbackLink.href = `mailto:${PUBLIC_CONTACT_EMAIL}?subject=${subject}&body=${body}`;
+            fallbackLink.textContent = PUBLIC_CONTACT_EMAIL;
+            statusEl.appendChild(fallbackLink);
+            statusEl.appendChild(document.createTextNode(currentLang === "hu" ? " címre." : "."));
+            announce(`${intro}${PUBLIC_CONTACT_EMAIL}`);
+            restoreSubmitButton();
+        };
+
+        if (typeof emailjs === "undefined") {
+            handleSendError({ status: 0, text: "EmailJS SDK is unavailable" });
+            return;
+        }
+
+        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
+            .then((response) => {
+                console.info("EmailJS send succeeded", {
+                    status: response && response.status,
+                    text: response && response.text
+                });
+                const successMessage = currentLang === "hu"
+                    ? "Köszönjük, megkaptuk az üzeneted. Hamarosan válaszolunk."
+                    : "Thank you, we received your message. We will reply soon.";
+                statusEl.style.color = "green";
+                statusEl.textContent = successMessage;
+                announce(successMessage);
+                contactForm.reset();
+                restoreSubmitButton();
+
+                // Respect EmailJS's one-request-per-second limit. Auto-response
+                // failure must not turn a successfully delivered inquiry into an error.
+                window.setTimeout(() => {
+                    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_AUTO_RESPONSE_TEMPLATE_ID, {
+                        to_email: templateParams.from_email,
+                        to_name: templateParams.from_name,
+                        from_name: "CodeNest",
+                        from_email: PUBLIC_CONTACT_EMAIL,
+                        reply_to: PUBLIC_CONTACT_EMAIL,
+                        contact_email: PUBLIC_CONTACT_EMAIL
+                    }).catch((autoResponseError) => {
+                        console.warn("EmailJS auto-response failed", {
+                            status: autoResponseError && autoResponseError.status,
+                            text: autoResponseError && autoResponseError.text
+                        });
+                    });
+                }, 1100);
+            })
+            .catch(handleSendError);
     });
 });
 
@@ -936,7 +1094,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function init() {
         console.log('%c👋 Welcome to CodeNest!', 'color: #3B82F6; font-size: 20px; font-weight: bold;');
         console.log('%cInterested in working with us? Get in touch!', 'color: #6B7280; font-size: 14px;');
-        console.log('%chello@codenest.hu', 'color: #3B82F6; font-size: 14px;');
+        console.log('%cinfo.codenest.hu@gmail.com', 'color: #3B82F6; font-size: 14px;');
         
         // Nyelv detektálása és beállítása
         currentLang = detectLanguage();
