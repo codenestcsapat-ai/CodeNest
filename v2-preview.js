@@ -445,30 +445,40 @@ const renderProblem = () => {
   setText('[data-render="problem-title"]', problem.title, "Problem");
   setText('[data-render="problem-text"]', problem.text, "V2 problem framing.");
 
-  const cards = points.map((point) => {
-    const card = createElement("article", "card compact-card");
-    if (typeof point === "string") {
-      card.append(createElement("p", "", fallback(point, "V2 problémapont.")));
-      return card;
-    }
-
-    card.append(
-      createElement("h3", "", fallback(point.title, "Probléma")),
-      createElement("p", "", fallback(point.text, "V2 problémapont."))
-    );
-    return card;
-  });
-
-  if (cards.length) clearAndAppend('[data-render="problem-points"]', cards);
+  const cards = points.slice(0, 4).map((point, index) => createProblemIssueCard(point, index));
+  const pointsContainer = document.querySelector('[data-render="problem-points"]');
+  if (pointsContainer) {
+    pointsContainer.classList.add("problem-issue-grid");
+    if (cards.length) pointsContainer.replaceChildren(...cards);
+  }
 
   renderProblemComparison(problem.beforeAfter);
 
   const solutionElement = document.querySelector('[data-render="problem-solution"]');
   if (solutionElement) {
     const solutionText = fallback(problem.solution, "");
+    solutionElement.classList.add("problem-statement-strip");
     solutionElement.textContent = solutionText;
     solutionElement.hidden = !solutionText;
   }
+};
+
+const createProblemIssueCard = (point, index) => {
+  const card = createElement("article", "card compact-card problem-issue-card");
+  const marker = createElement("span", "problem-issue-marker", String(index + 1).padStart(2, "0"));
+  marker.setAttribute("aria-hidden", "true");
+
+  if (typeof point === "string") {
+    card.append(marker, createElement("p", "", fallback(point, "V2 problémapont.")));
+    return card;
+  }
+
+  card.append(
+    marker,
+    createElement("h3", "", fallback(point.title, "Probléma")),
+    createElement("p", "", fallback(point.text, "V2 problémapont."))
+  );
+  return card;
 };
 
 const renderProblemComparison = (comparison) => {
@@ -479,24 +489,34 @@ const renderProblemComparison = (comparison) => {
   const afterItems = getArray(comparison?.after);
   if (!beforeItems.length && !afterItems.length) return;
 
-  const before = createComparisonColumn(ui.before, beforeItems);
-  const after = createComparisonColumn(ui.after, afterItems);
-  container.replaceChildren(before, after);
+  const before = createComparisonColumn(ui.before, beforeItems, "before");
+  const transition = createProblemTransition();
+  const after = createComparisonColumn(ui.after, afterItems, "after");
+  container.replaceChildren(before, transition, after);
 };
 
-const createComparisonColumn = (title, items) => {
-  const column = createElement("div", "compare-column");
-  column.append(createElement("h3", "", title));
+const createProblemTransition = () => {
+  const transition = createElement("div", "problem-transition");
+  transition.setAttribute("aria-hidden", "true");
+  transition.append(createElement("span", "problem-transition-line"), createElement("span", "problem-transition-arrow", "→"));
+  return transition;
+};
 
-  const list = createElement("ul", "plain-list");
+const createComparisonColumn = (title, items, variant = "before") => {
+  const column = createElement("div", "compare-column compare-" + variant);
+  const header = createElement("div", "compare-column-header");
+  const marker = createElement("span", "compare-marker");
+  marker.setAttribute("aria-hidden", "true");
+  header.append(marker, createElement("h3", "", title));
+
+  const list = createElement("ul", "plain-list compare-tags");
   items.forEach((item) => {
     list.append(createElement("li", "", String(item)));
   });
 
-  column.append(list);
+  column.append(header, list);
   return column;
 };
-
 const renderServices = () => {
   const cards = services.slice(0, 3).map((service, index) => {
     const card = createElement("article", "card service-card");
@@ -1136,6 +1156,7 @@ const getContactUxCopy = () => {
       nextTitle: "Mi t\u00f6rt\u00e9nik ut\u00e1na?",
       nextSteps: ["Vissza\u00edrunk, ha valamit pontos\u00edtani kell.", "Megn\u00e9zz\u00fck, mi lenne re\u00e1lis els\u0151 l\u00e9p\u00e9s.", "Ha passzol, kapsz egy \u00e9rthet\u0151 javaslatot."],
       subject: "CodeNest projekt \u00e1tbesz\u00e9l\u00e9s",
+      mailBody: "Szia CodeNest!\n\nRövid leírás:\n\n- jelenlegi oldal / helyzet:\n- mi zavar vagy mit lenne jó egyszerűsíteni:\n- milyen következő lépés lenne ideális:\n\nKöszönöm!",
       privacyIntro: "Az \u00fczenet elk\u00fcld\u00e9s\u00e9vel tudom\u00e1sul veszem az ",
       privacyLinkLabel: "Adatkezel\u00e9si t\u00e1j\u00e9koztat\u00f3ban",
       privacyEnd: " foglaltakat.",
@@ -1158,6 +1179,7 @@ const getContactUxCopy = () => {
       nextTitle: "What happens next?",
       nextSteps: ["We reply if something needs clarifying.", "We look at a realistic first step.", "If it fits, you get a clear suggestion."],
       subject: "CodeNest project conversation",
+      mailBody: "Hi CodeNest,\n\nIn short, this is what we would like to discuss:\n\n- current website / situation:\n- what feels difficult or should be simpler:\n- ideal next step:\n\nThank you!",
       privacyIntro: "By sending a message, I acknowledge the ",
       privacyLinkLabel: "Privacy Notice",
       privacyEnd: ".",
@@ -1180,6 +1202,7 @@ const getContactUxCopy = () => {
       nextTitle: "Was passiert danach?",
       nextSteps: ["Wir melden uns, wenn etwas zu kl\u00e4ren ist.", "Wir schauen, was ein realistischer erster Schritt w\u00e4re.", "Wenn es passt, bekommst du einen klaren Vorschlag."],
       subject: "CodeNest Projektgespr\u00e4ch",
+      mailBody: "Hallo CodeNest,\n\nKurz gesagt geht es um:\n\n- aktuelle Website / Situation:\n- was schwierig ist oder einfacher werden sollte:\n- sinnvoller nächster Schritt:\n\nVielen Dank!",
       privacyIntro: "Mit dem Senden der Nachricht nehme ich die ",
       privacyLinkLabel: "Datenschutzhinweise",
       privacyEnd: " zur Kenntnis.",
@@ -1197,10 +1220,11 @@ const renderContact = () => {
   setText('[data-render="contact-title"]', contactCopy.title, "Kapcsolat");
   setText('[data-render="contact-text"]', contactCopy.intro, fallback(contact.text, ""));
 
-  const emailAddress = fallback(contact.email, "info@codenest.hu");
+  const emailAddress = fallback(contact.email, "info.codenest.hu@gmail.com");
   const ctaLabel = contactCopy.ctaLabel;
   const emailLabel = contactCopy.emailLabel;
   const mailSubject = encodeURIComponent(contactCopy.subject);
+  const mailBody = contactCopy.mailBody ? encodeURIComponent(contactCopy.mailBody) : "";
 
   const side = createElement("div", "contact-side contact-conversation-card");
   const eyebrow = createElement("p", "contact-eyebrow", contactCopy.eyebrow);
@@ -1214,7 +1238,7 @@ const renderContact = () => {
   const note = createElement("p", "contact-brief-note", contactCopy.note);
   const trustList = createElement("ul", "contact-trust-list");
 
-  cta.href = "mailto:" + emailAddress + "?subject=" + mailSubject;
+  cta.href = "mailto:" + emailAddress + "?subject=" + mailSubject + (mailBody ? "&body=" + mailBody : "");
   cta.dataset.linkType = "email";
   cta.setAttribute("aria-label", ctaLabel);
 
