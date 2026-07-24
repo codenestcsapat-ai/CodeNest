@@ -440,82 +440,195 @@ const renderHero = () => {
 
 const renderProblem = () => {
   const problem = siteContent.problem || {};
-  const points = getArray(problem.painPoints).length ? getArray(problem.painPoints) : getArray(problem.points);
+  const visualCopy = getProblemVisualCopy();
 
   setText('[data-render="problem-title"]', problem.title, "Problem");
   setText('[data-render="problem-text"]', problem.text, "V2 problem framing.");
 
-  const cards = points.slice(0, 4).map((point, index) => createProblemIssueCard(point, index));
-  const pointsContainer = document.querySelector('[data-render="problem-points"]');
-  if (pointsContainer) {
-    pointsContainer.classList.add("problem-issue-grid");
-    if (cards.length) pointsContainer.replaceChildren(...cards);
-  }
-
-  renderProblemComparison(problem.beforeAfter);
+  renderProblemComparison(problem.beforeAfter, visualCopy);
+  renderProblemInsightStrip(visualCopy);
 
   const solutionElement = document.querySelector('[data-render="problem-solution"]');
   if (solutionElement) {
-    const solutionText = fallback(problem.solution, "");
+    const solutionText = fallback(problem.solution, visualCopy.statement);
     solutionElement.classList.add("problem-statement-strip");
     solutionElement.textContent = solutionText;
     solutionElement.hidden = !solutionText;
   }
 };
 
-const createProblemIssueCard = (point, index) => {
-  const card = createElement("article", "card compact-card problem-issue-card");
-  const marker = createElement("span", "problem-issue-marker", String(index + 1).padStart(2, "0"));
-  marker.setAttribute("aria-hidden", "true");
-
-  if (typeof point === "string") {
-    card.append(marker, createElement("p", "", fallback(point, "V2 problémapont.")));
-    return card;
-  }
-
-  card.append(
-    marker,
-    createElement("h3", "", fallback(point.title, "Probléma")),
-    createElement("p", "", fallback(point.text, "V2 problémapont."))
-  );
-  return card;
+const getProblemVisualCopy = () => {
+  const copy = {
+    hu: {
+      beforeLabel: "El\u0151tte",
+      afterLabel: "Ut\u00e1na",
+      transitionLabel: "\u00dajragondoljuk",
+      oldPageTitle: "R\u00e9gi oldal",
+      oldNews: "2022-es h\u00edr",
+      oldContact: "Nehezen tal\u00e1lhat\u00f3 kapcsolat",
+      oldMobile: "Mobilon zs\u00fafolt",
+      newPageTitle: "Rendezett oldal",
+      adminTitle: "Tartalomkezel\u00e9s",
+      saved: "V\u00e1ltoz\u00e1s mentve",
+      publicStatus: "Publikus",
+      mobileTitle: "Mobilon is k\u00e9nyelmes",
+      insightLabel: "A v\u00e1ltoz\u00e1s l\u00e9nyege",
+      insights: ["Friss\u00edthet\u0151 tartalom", "\u00c1tl\u00e1that\u00f3 szerkezet", "K\u00f6nnyebb \u00e1tad\u00e1s"],
+      statement: "Olyan weboldalakat k\u00e9sz\u00edt\u00fcnk, amelyek nem csak els\u0151 r\u00e1n\u00e9z\u00e9sre sz\u00e9pek, hanem a mindennapi haszn\u00e1latban is seg\u00edtenek: a l\u00e1togat\u00f3nak eligazodni, az \u00fcgyf\u00e9lnek pedig friss\u00edteni, \u00e1tadni \u00e9s hosszabb t\u00e1von m\u0171k\u00f6dtetni.",
+    },
+    en: {
+      beforeLabel: "Before",
+      afterLabel: "After",
+      transitionLabel: "We reorganize it",
+      oldPageTitle: "Old website",
+      oldNews: "2022 news item",
+      oldContact: "Contact is hard to find",
+      oldMobile: "Crowded on mobile",
+      newPageTitle: "Clear website",
+      adminTitle: "Content admin",
+      saved: "Changes saved",
+      publicStatus: "Public",
+      mobileTitle: "Comfortable on mobile",
+      insightLabel: "What changes",
+      insights: ["Editable content", "Clear structure", "Easier handover"],
+      statement: "We build websites that are not only good-looking at first glance, but also help in everyday use: visitors can find their way around, and clients can update, hand over and maintain the site long term.",
+    },
+    de: {
+      beforeLabel: "Vorher",
+      afterLabel: "Nachher",
+      transitionLabel: "Wir ordnen es neu",
+      oldPageTitle: "Alte Website",
+      oldNews: "Nachricht aus 2022",
+      oldContact: "Kontakt schwer zu finden",
+      oldMobile: "Auf Mobilger\u00e4ten \u00fcberladen",
+      newPageTitle: "Klare Website",
+      adminTitle: "Content-Admin",
+      saved: "\u00c4nderung gespeichert",
+      publicStatus: "\u00d6ffentlich",
+      mobileTitle: "Auch mobil bequem",
+      insightLabel: "Was sich \u00e4ndert",
+      insights: ["Editierbare Inhalte", "Klare Struktur", "Einfachere \u00dcbergabe"],
+      statement: "Wir bauen Websites, die nicht nur auf den ersten Blick gut aussehen, sondern im Alltag helfen: Besucher finden sich leichter zurecht, und Kunden k\u00f6nnen die Website langfristig aktualisieren, \u00fcbergeben und betreiben.",
+    },
+  };
+  return copy[currentLanguage] || copy.hu;
 };
 
-const renderProblemComparison = (comparison) => {
+const renderProblemInsightStrip = (visualCopy) => {
+  const container = document.querySelector('[data-render="problem-points"]');
+  if (!container) return;
+
+  container.className = "problem-insight-strip";
+  const label = createElement("span", "problem-insight-label", visualCopy.insightLabel);
+  const list = createElement("div", "problem-insights");
+  getArray(visualCopy.insights).forEach((item) => list.append(createElement("span", "", item)));
+  container.replaceChildren(label, list);
+};
+
+const renderProblemComparison = (comparison, visualCopy = getProblemVisualCopy()) => {
   const container = document.querySelector('[data-render="problem-comparison"]');
   if (!container) return;
 
   const beforeItems = getArray(comparison?.before);
   const afterItems = getArray(comparison?.after);
-  if (!beforeItems.length && !afterItems.length) return;
 
-  const before = createComparisonColumn(ui.before, beforeItems, "before");
-  const transition = createProblemTransition();
-  const after = createComparisonColumn(ui.after, afterItems, "after");
+  const before = createProblemWebsiteMockup("before", visualCopy, beforeItems);
+  const transition = createProblemTransition(visualCopy);
+  const after = createProblemWebsiteMockup("after", visualCopy, afterItems);
+  container.classList.add("problem-visual-core");
   container.replaceChildren(before, transition, after);
 };
 
-const createProblemTransition = () => {
-  const transition = createElement("div", "problem-transition");
+const createProblemTransition = (visualCopy = getProblemVisualCopy()) => {
+  const transition = createElement("div", "problem-transform-path");
   transition.setAttribute("aria-hidden", "true");
-  transition.append(createElement("span", "problem-transition-line"), createElement("span", "problem-transition-arrow", "→"));
+  transition.append(
+    createElement("span", "problem-path-line"),
+    createElement("span", "problem-path-node", "\u2192"),
+    createElement("span", "problem-path-label", visualCopy.transitionLabel)
+  );
   return transition;
 };
 
-const createComparisonColumn = (title, items, variant = "before") => {
-  const column = createElement("div", "compare-column compare-" + variant);
-  const header = createElement("div", "compare-column-header");
-  const marker = createElement("span", "compare-marker");
-  marker.setAttribute("aria-hidden", "true");
-  header.append(marker, createElement("h3", "", title));
+const createProblemWebsiteMockup = (variant, visualCopy, tags = []) => {
+  const isAfter = variant === "after";
+  const panel = createElement("article", "problem-browser problem-browser-" + variant);
+  const header = createElement("div", "problem-browser-header");
+  const dots = createElement("span", "problem-browser-dots");
+  dots.setAttribute("aria-hidden", "true");
+  header.append(dots, createElement("strong", "", isAfter ? visualCopy.afterLabel : visualCopy.beforeLabel));
 
-  const list = createElement("ul", "plain-list compare-tags");
-  items.forEach((item) => {
-    list.append(createElement("li", "", String(item)));
-  });
+  const screen = createElement("div", "problem-browser-screen");
+  if (isAfter) {
+    screen.append(createAfterPublicPreview(visualCopy), createAfterAdminPreview(visualCopy), createAfterMobilePreview(visualCopy));
+  } else {
+    screen.append(createBeforePublicPreview(visualCopy), createBeforeMobilePreview(visualCopy));
+  }
 
-  column.append(header, list);
-  return column;
+  const tagList = createElement("ul", "problem-state-tags");
+  getArray(tags).slice(0, 3).forEach((item) => tagList.append(createElement("li", "", String(item))));
+
+  panel.append(header, screen);
+  if (tagList.childElementCount) panel.append(tagList);
+  return panel;
+};
+
+const createBeforePublicPreview = (visualCopy) => {
+  const preview = createElement("div", "problem-old-site-preview");
+  preview.append(
+    createElement("span", "problem-mini-label", visualCopy.oldPageTitle),
+    createElement("span", "problem-old-headline"),
+    createElement("span", "problem-old-line wide"),
+    createElement("span", "problem-old-line"),
+    createElement("span", "problem-warning-label", visualCopy.oldNews),
+    createElement("span", "problem-warning-label muted", visualCopy.oldContact)
+  );
+  return preview;
+};
+
+const createBeforeMobilePreview = (visualCopy) => {
+  const mobile = createElement("div", "problem-old-mobile");
+  mobile.append(
+    createElement("span", "problem-mobile-notch"),
+    createElement("span", "problem-mobile-line"),
+    createElement("span", "problem-mobile-line short"),
+    createElement("strong", "", visualCopy.oldMobile)
+  );
+  return mobile;
+};
+
+const createAfterPublicPreview = (visualCopy) => {
+  const preview = createElement("div", "problem-new-site-preview");
+  preview.append(
+    createElement("span", "problem-mini-label", visualCopy.newPageTitle),
+    createElement("h3", "", visualCopy.newPageTitle),
+    createElement("span", "problem-new-line wide"),
+    createElement("span", "problem-new-line"),
+    createElement("span", "problem-status-chip", visualCopy.publicStatus)
+  );
+  return preview;
+};
+
+const createAfterAdminPreview = (visualCopy) => {
+  const admin = createElement("div", "problem-admin-preview");
+  admin.append(
+    createElement("span", "problem-mini-label", visualCopy.adminTitle),
+    createElement("strong", "", visualCopy.saved),
+    createElement("span", "problem-admin-row"),
+    createElement("span", "problem-admin-row short")
+  );
+  return admin;
+};
+
+const createAfterMobilePreview = (visualCopy) => {
+  const mobile = createElement("div", "problem-new-mobile");
+  mobile.append(
+    createElement("span", "problem-mobile-notch"),
+    createElement("span", "problem-mobile-line"),
+    createElement("span", "problem-mobile-card"),
+    createElement("strong", "", visualCopy.mobileTitle)
+  );
+  return mobile;
 };
 const renderServices = () => {
   const cards = services.slice(0, 3).map((service, index) => {
