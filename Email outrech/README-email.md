@@ -39,6 +39,8 @@ A sablonok helyi előnézetben relatív képutakat használnak:
 
 Éles emailküldés előtt a relatív képutakat publikus HTTPS URL-ekre kell cserélni, vagy az emailküldő rendszer assetkezelőjébe kell feltölteni. A lokális `../Bors&David_3_laptopos.png` útvonal böngészős preview-ban működik, de Gmailben vagy Outlookban önmagában nem fog betöltődni.
 
+A `codenest-outreach-business-gmail-ready.html` és a `codenest-outreach-taewoong.html` már az abszolút `https://codenest.hu/email-assets/` kép-URL-eket használja. Ezeket csak akkor szabad elküldeni, amikor az `email-assets/` mappa már kikerült az élő weboldalra, és minden hivatkozott URL sikeresen betöltődik.
+
 ## Küldés előtti ellenőrzés
 
 - [ ] a megfelelő célcsoportos HTML variáns kiválasztva
@@ -53,3 +55,14 @@ A sablonok helyi előnézetben relatív képutakat használnak:
 ## Javaslat
 
 Első körben ne mindenkinek ugyanazt a sablont küldjük. A legjobb eséllyel a célzott verziók működnek: intézménynek intézményi nyelv, vállalkozásnak üzleti nyelv, turisztikai szereplőnek vendégszemléletű nyelv.
+
+## Manuális küldés Gmailből
+
+1. Nyisd meg a küldésre kész HTML-fájlt Chrome-ban.
+2. Ellenőrizd, hogy minden kép betöltődik.
+3. Jelöld ki a böngészőben megjelenített teljes emailt, majd másold ki.
+4. Illeszd be egy új Gmail-levél törzsébe.
+5. Először küldj tesztlevelet saját magunknak, és ellenőrizd asztali gépen és mobilon is.
+6. Csak a sikeres teszt után küldd el a címzettnek.
+
+A címzett levelezőprogramja letilthatja a távoli képeket. Emiatt küldés előtt azt is ellenőrizni kell, hogy a szöveges tartalom, az alternatív képszövegek és a linkek képek nélkül is érthetővé teszik az emailt.
