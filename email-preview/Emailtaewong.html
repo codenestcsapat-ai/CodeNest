@@ -13,16 +13,7 @@
     img { border:0; height:auto; line-height:100%; outline:none; text-decoration:none; -ms-interpolation-mode:bicubic; display:block; }
     a { text-decoration:none; }
     p { margin:0; }
-
-
-    .profile-mobile-only {
-      display: none;
-      max-height: 0;
-      overflow: hidden;
-      mso-hide: all;
-    }
-
-    @media only screen and (max-width:680px) {
+@media only screen and (max-width:680px) {
       .outer-pad { padding:8px !important; }
       .main-shell { width:100% !important; max-width:100% !important; }
       .content-pad { padding-left:18px !important; padding-right:18px !important; }
@@ -105,46 +96,7 @@
       .profile-row-mobile h3 {
         margin-top: 0 !important;
       }
-
-      .profile-desktop {
-        display: none !important;
-        max-height: 0 !important;
-        overflow: hidden !important;
-        mso-hide: all !important;
-        font-size: 0 !important;
-        line-height: 0 !important;
-      }
-      .profile-mobile-only {
-        display: table !important;
-        width: 100% !important;
-        max-height: none !important;
-        overflow: visible !important;
-        mso-hide: none !important;
-      }
-      .profile-mobile-head {
-        width: auto !important;
-        vertical-align: middle !important;
-        padding-right: 12px !important;
-      }
-      .profile-mobile-photo {
-        width: 92px !important;
-        vertical-align: middle !important;
-        text-align: right !important;
-      }
-      .profile-mobile-photo img {
-        width: 88px !important;
-        height: 88px !important;
-        border-radius: 10px !important;
-      }
-      .profile-mobile-desc {
-        padding-top: 10px !important;
-      }
-      .profile-mobile-desc p {
-        font-size: 14px !important;
-        line-height: 1.5 !important;
-      }
-
-      .footer-piece { display:block !important; width:100% !important; padding:4px 0 !important; line-height:1.45 !important; }
+.footer-piece { display:block !important; width:100% !important; padding:4px 0 !important; line-height:1.45 !important; }
       .footer-separator { display:none !important; }
       .top-note { font-size:14px !important; line-height:1.5 !important; }
       .main-copy p { font-size:14px !important; line-height:1.6 !important; }
@@ -157,6 +109,12 @@
       .service-copy { font-size:14px !important; line-height:1.55 !important; }
       .benefit p { font-size:14px !important; line-height:1.5 !important; }
       .profile-copy-cell p { font-size:14px !important; line-height:1.5 !important; }
+      .profile-stable-head { width:100% !important; }
+      .profile-stable-text { vertical-align:middle !important; padding-right:12px !important; }
+      .profile-stable-photo { width:92px !important; vertical-align:middle !important; text-align:right !important; }
+      .profile-stable-photo img { width:88px !important; height:88px !important; }
+      .profile-stable-desc { padding-top:10px !important; }
+      .profile-stable-desc p { font-size:14px !important; line-height:1.5 !important; }
       .bullet-col td.dark-text, .bullet-col-second td.dark-text { font-size:14px !important; line-height:1.45 !important; }
       .cta-pad p.dark-text { font-size:14px !important; line-height:1.5 !important; }
       .footer-piece, .footer-piece a { font-size:14px !important; line-height:1.5 !important; }
@@ -191,13 +149,7 @@
       .navy-text { color:#14283d !important; }
       .green-text, a { color:#174532 !important; }
     }
-
-    /* Desktop default: keep original right-side icons */
-
-    @media only screen and (max-width:680px) {
-    }
-
-  </style>
+</style>
 </head>
 
 <body class="email-bg" style="margin:0; padding:0; background-color:#faf6ef; color:#292c35; font-family:'Trebuchet MS','Segoe UI',Arial,Helvetica,sans-serif;">
@@ -260,7 +212,7 @@
 
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;">
                 <tr class="stack">
-                  <td width="32.4%" valign="top" class="stack-cell service-card white-bg" style="width:32.4%; height:128px; padding:15px 16px 13px; background:#ffffff; border:1px solid #e8d9c5; border-radius:13px; box-sizing:border-box;">
+                  <td width="32.4%" valign="top" class="stack-cell service-card white-bg" style="width:32.4%; height:146px; padding:15px 16px 14px; background:#ffffff; border:1px solid #e8d9c5; border-radius:13px; box-sizing:border-box;">
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                       <tr>
                         <td valign="top" style="padding-right:8px;">
@@ -282,13 +234,13 @@
                         </td>
                       </tr>
                     </table>
-                    <p class="service-copy dark-text" style="margin:5px 0 0; color:#292c35; font-size:11.2px; line-height:1.42;">Átlátható oldal, amely bemutatja a cégük tevékenységét, alapadatait, elérhetőségeit és fő bizalmi pontjait.</p>
+                    <p class="service-copy dark-text" style="margin:5px 0 0; color:#292c35; font-size:12.2px; line-height:1.48;">Átlátható oldal, amely bemutatja a cégük tevékenységét, alapadatait, elérhetőségeit és fő bizalmi pontjait.</p>
                     <p style="margin:8px 0 0; width:22px; border-top:2px solid #2f6a4e; font-size:0; line-height:0;">&nbsp;</p>
                   </td>
 
                   <td width="1.4%" class="stack-cell card-gap" style="width:1.4%; font-size:0; line-height:0;">&nbsp;</td>
 
-                  <td width="32.4%" valign="top" class="stack-cell service-card white-bg" style="width:32.4%; height:128px; padding:15px 16px 13px; background:#ffffff; border:1px solid #e8d9c5; border-radius:13px; box-sizing:border-box;">
+                  <td width="32.4%" valign="top" class="stack-cell service-card white-bg" style="width:32.4%; height:146px; padding:15px 16px 14px; background:#ffffff; border:1px solid #e8d9c5; border-radius:13px; box-sizing:border-box;">
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                       <tr>
                         <td valign="top" style="padding-right:8px;">
@@ -310,13 +262,13 @@
                         </td>
                       </tr>
                     </table>
-                    <p class="service-copy dark-text" style="margin:0; color:#292c35; font-size:11.2px; line-height:1.42;">A potenciális partner, érdeklődő vagy álláskereső gyorsan megtalálhatja, hogyan és hol tud kapcsolatba lépni Önökkel.</p>
+                    <p class="service-copy dark-text" style="margin:0; color:#292c35; font-size:12.2px; line-height:1.48;">A potenciális partner, érdeklődő vagy álláskereső gyorsan megtalálhatja, hogyan és hol tud kapcsolatba lépni Önökkel.</p>
                     <p style="margin:8px 0 0; width:22px; border-top:2px solid #2f6a4e; font-size:0; line-height:0;">&nbsp;</p>
                   </td>
 
                   <td width="1.4%" class="stack-cell card-gap" style="width:1.4%; font-size:0; line-height:0;">&nbsp;</td>
 
-                  <td width="32.4%" valign="top" class="stack-cell service-card white-bg" style="width:32.4%; height:128px; padding:15px 16px 13px; background:#ffffff; border:1px solid #e8d9c5; border-radius:13px; box-sizing:border-box;">
+                  <td width="32.4%" valign="top" class="stack-cell service-card white-bg" style="width:32.4%; height:146px; padding:15px 16px 14px; background:#ffffff; border:1px solid #e8d9c5; border-radius:13px; box-sizing:border-box;">
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                       <tr>
                         <td valign="top" style="padding-right:8px;">
@@ -338,7 +290,7 @@
                         </td>
                       </tr>
                     </table>
-                    <p class="service-copy dark-text" style="margin:0; color:#292c35; font-size:11.2px; line-height:1.42;">Elérhetőségek, képek, cégadatok és fontos információk később is egyszerűen kezelhetők és frissíthetők.</p>
+                    <p class="service-copy dark-text" style="margin:0; color:#292c35; font-size:12.2px; line-height:1.48;">Elérhetőségek, képek, cégadatok és fontos információk később is egyszerűen kezelhetők és frissíthetők.</p>
                     <p style="margin:8px 0 0; width:22px; border-top:2px solid #2f6a4e; font-size:0; line-height:0;">&nbsp;</p>
                   </td>
                 </tr>
@@ -356,7 +308,7 @@
                   </td>
                 </tr>
                 <tr class="stack">
-                  <td width="25%" valign="top" class="stack-cell benefit" style="width:25%; padding:10px 16px 14px; border-right:1px solid #e8d9c5; box-sizing:border-box;">
+                  <td width="25%" valign="top" class="stack-cell benefit" style="width:25%; padding:12px 16px 15px; border-right:1px solid #e8d9c5; box-sizing:border-box;">
                     <table role="presentation" cellpadding="0" cellspacing="0" border="0" class="benefit-head" style="border-collapse:collapse; width:auto !important; margin:0 0 6px;">
                       <tr>
                         <td class="title-cell" valign="middle">
@@ -367,9 +319,9 @@
                         </td>
                       </tr>
                     </table>
-                    <p class="dark-text" style="margin:0; color:#292c35; font-size:10.4px; line-height:1.45;">Az egyeztetés közvetlenül velünk történik, így gyorsabban át tudjuk tekinteni az igényeket és a lehetséges megoldásokat.</p>
+                    <p class="dark-text" style="margin:0; color:#292c35; font-size:11.6px; line-height:1.5;">Az egyeztetés közvetlenül velünk történik, így gyorsabban át tudjuk tekinteni az igényeket és a lehetséges megoldásokat.</p>
                   </td>
-                  <td width="25%" valign="top" class="stack-cell benefit" style="width:25%; padding:10px 16px 14px; border-right:1px solid #e8d9c5; box-sizing:border-box;">
+                  <td width="25%" valign="top" class="stack-cell benefit" style="width:25%; padding:12px 16px 15px; border-right:1px solid #e8d9c5; box-sizing:border-box;">
                     <table role="presentation" cellpadding="0" cellspacing="0" border="0" class="benefit-head" style="border-collapse:collapse; width:auto !important; margin:0 0 6px;">
                       <tr>
                         <td class="title-cell" valign="middle">
@@ -380,9 +332,9 @@
                         </td>
                       </tr>
                     </table>
-                    <p class="dark-text" style="margin:0; color:#292c35; font-size:10.4px; line-height:1.45;">Kis csapatként gyorsan tudunk reagálni, módosítani és a megbízó igényeinek megfelelő megoldást kialakítani.</p>
+                    <p class="dark-text" style="margin:0; color:#292c35; font-size:11.6px; line-height:1.5;">Kis csapatként gyorsan tudunk reagálni, módosítani és a megbízó igényeinek megfelelő megoldást kialakítani.</p>
                   </td>
-                  <td width="25%" valign="top" class="stack-cell benefit" style="width:25%; padding:10px 16px 14px; border-right:1px solid #e8d9c5; box-sizing:border-box;">
+                  <td width="25%" valign="top" class="stack-cell benefit" style="width:25%; padding:12px 16px 15px; border-right:1px solid #e8d9c5; box-sizing:border-box;">
                     <table role="presentation" cellpadding="0" cellspacing="0" border="0" class="benefit-head" style="border-collapse:collapse; width:auto !important; margin:0 0 6px;">
                       <tr>
                         <td class="title-cell" valign="middle">
@@ -393,9 +345,9 @@
                         </td>
                       </tr>
                     </table>
-                    <p class="dark-text" style="margin:0; color:#292c35; font-size:10.4px; line-height:1.45;">A cél nem egy sablonos weboldal, hanem az Önök működéséhez és kommunikációjához illeszkedő online megjelenés kialakítása.</p>
+                    <p class="dark-text" style="margin:0; color:#292c35; font-size:11.6px; line-height:1.5;">A cél nem egy sablonos weboldal, hanem az Önök működéséhez és kommunikációjához illeszkedő online megjelenés kialakítása.</p>
                   </td>
-                  <td width="25%" valign="top" class="stack-cell benefit benefit-last" style="width:25%; padding:10px 16px 14px; box-sizing:border-box;">
+                  <td width="25%" valign="top" class="stack-cell benefit benefit-last" style="width:25%; padding:12px 16px 15px; box-sizing:border-box;">
                     <table role="presentation" cellpadding="0" cellspacing="0" border="0" class="benefit-head" style="border-collapse:collapse; width:auto !important; margin:0 0 6px;">
                       <tr>
                         <td class="title-cell" valign="middle">
@@ -406,7 +358,7 @@
                         </td>
                       </tr>
                     </table>
-                    <p class="dark-text" style="margin:0; color:#292c35; font-size:10.4px; line-height:1.45;">Azt nézzük meg, milyen egyszerűen kialakítható és kezelhető online megjelenés illeszkedne legjobban az Önök igényeihez.</p>
+                    <p class="dark-text" style="margin:0; color:#292c35; font-size:11.6px; line-height:1.5;">Azt nézzük meg, milyen egyszerűen kialakítható és kezelhető online megjelenés illeszkedne legjobban az Önök igényeihez.</p>
                   </td>
                 </tr>
               </table>
@@ -420,50 +372,38 @@
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr class="stack">
                   <td width="49.3%" valign="top" class="stack-cell profile-card white-bg" style="width:49.3%; padding:12px; border:1px solid #e8d9c5; border-radius:13px; background:#ffffff; box-sizing:border-box;">
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="profile-inner profile-desktop">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="profile-inner profile-stable-head">
                       <tr>
-                        <td width="108" valign="top" class="profile-photo-cell" style="width:108px; padding-right:14px;"><img src="https://codenest.hu/email-assets/bors-portrait.jpg" width="108" height="108" class="profile-photo" alt="Bors, a CodeNest projektvezetője" style="display:block; width:108px; height:108px; object-fit:cover; border-radius:10px;"></td>
-                        <td valign="top" class="profile-copy-cell"><h3 class="green-text" style="margin:0 0 2px; color:#174532; font-size:17px; line-height:1.2;">Bors</h3><p class="dark-text" style="margin:0 0 5px; color:#292c35; font-size:11px; line-height:1.28; font-weight:700;">Projektvezetés, webes rendszerek, ügyfélkommunikáció</p><p class="dark-text" style="margin:0; color:#292c35; font-size:10.5px; line-height:1.42;">Én fogom össze a projektet: egyeztetek, kérdezek, rendszerezem az igényeket, és figyelek arra, hogy az oldal ízléses megjelenés mellett érthető és használható is legyen.</p></td>
-                      </tr>
-                    </table>
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="profile-mobile-only">
-                      <tr>
-                        <td valign="middle" class="profile-mobile-head">
+                        <td valign="middle" class="profile-stable-text" style="padding-right:14px;">
                           <h3 class="green-text" style="margin:0 0 4px; color:#174532; font-size:17px; line-height:1.2;">Bors</h3>
-                          <p class="dark-text" style="margin:0; color:#292c35; font-size:14px; line-height:1.35; font-weight:700;">Projektvezetés, webes rendszerek, ügyfélkommunikáció</p>
+                          <p class="dark-text" style="margin:0; color:#292c35; font-size:12px; line-height:1.32; font-weight:700;">Projektvezetés, webes rendszerek, ügyfélkommunikáció</p>
                         </td>
-                        <td valign="middle" align="right" class="profile-mobile-photo">
-                          <img src="https://codenest.hu/email-assets/bors-portrait.jpg" width="88" height="88" alt="Bors, a CodeNest projektvezetője" style="display:block; width:88px; height:88px; object-fit:cover; border-radius:10px;">
+                        <td width="108" valign="middle" align="right" class="profile-stable-photo" style="width:108px;">
+                          <img src="https://codenest.hu/email-assets/bors-portrait.jpg" width="108" height="108" class="profile-photo" alt="Bors, a CodeNest projektvezetője" style="display:block; width:108px; height:108px; object-fit:cover; border-radius:10px;">
                         </td>
                       </tr>
                       <tr>
-                        <td colspan="2" class="profile-mobile-desc">
-                          <p class="dark-text" style="margin:0; color:#292c35; font-size:14px; line-height:1.5;">Én fogom össze a projektet: egyeztetek, kérdezek, rendszerezem az igényeket, és figyelek arra, hogy az oldal ízléses megjelenés mellett érthető és használható is legyen.</p>
+                        <td colspan="2" class="profile-stable-desc" style="padding-top:10px;">
+                          <p class="dark-text" style="margin:0; color:#292c35; font-size:12.2px; line-height:1.5;">Én fogom össze a projektet: egyeztetek, kérdezek, rendszerezem az igényeket, és figyelek arra, hogy az oldal ízléses megjelenés mellett érthető és használható is legyen.</p>
                         </td>
                       </tr>
                     </table>
                   </td>
                   <td width="1.4%" class="stack-cell profile-gap" style="width:1.4%; font-size:0;">&nbsp;</td>
                   <td width="49.3%" valign="top" class="stack-cell profile-card white-bg" style="width:49.3%; padding:12px; border:1px solid #e8d9c5; border-radius:13px; background:#ffffff; box-sizing:border-box;">
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="profile-inner profile-desktop">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="profile-inner profile-stable-head">
                       <tr>
-                        <td width="108" valign="top" class="profile-photo-cell" style="width:108px; padding-right:14px;"><img src="https://codenest.hu/email-assets/david-portrait.jpg" width="108" height="108" class="profile-photo" alt="Dávid, a CodeNest frontend fejlesztője" style="display:block; width:108px; height:108px; object-fit:cover; border-radius:10px;"></td>
-                        <td valign="top" class="profile-copy-cell"><h3 class="green-text" style="margin:0 0 2px; color:#174532; font-size:17px; line-height:1.2;">Dávid</h3><p class="dark-text" style="margin:0 0 5px; color:#292c35; font-size:11px; line-height:1.28; font-weight:700;">Frontend, felületépítés,<br>HTML / CSS / JavaScript</p><p class="dark-text" style="margin:0; color:#292c35; font-size:10.5px; line-height:1.42;">Dávid az oldalak felületén dolgozik. Ő építi meg azt, amit közösen kitalálunk: hogy a designból működő, gyors és telefonon is kényelmes weboldal legyen.</p></td>
-                      </tr>
-                    </table>
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="profile-mobile-only">
-                      <tr>
-                        <td valign="middle" class="profile-mobile-head">
+                        <td valign="middle" class="profile-stable-text" style="padding-right:14px;">
                           <h3 class="green-text" style="margin:0 0 4px; color:#174532; font-size:17px; line-height:1.2;">Dávid</h3>
-                          <p class="dark-text" style="margin:0; color:#292c35; font-size:14px; line-height:1.35; font-weight:700;">Frontend, felületépítés,<br>HTML / CSS / JavaScript</p>
+                          <p class="dark-text" style="margin:0; color:#292c35; font-size:12px; line-height:1.32; font-weight:700;">Frontend, felületépítés,<br>HTML / CSS / JavaScript</p>
                         </td>
-                        <td valign="middle" align="right" class="profile-mobile-photo">
-                          <img src="https://codenest.hu/email-assets/david-portrait.jpg" width="88" height="88" alt="Dávid, a CodeNest frontend fejlesztője" style="display:block; width:88px; height:88px; object-fit:cover; border-radius:10px;">
+                        <td width="108" valign="middle" align="right" class="profile-stable-photo" style="width:108px;">
+                          <img src="https://codenest.hu/email-assets/david-portrait.jpg" width="108" height="108" class="profile-photo" alt="Dávid, a CodeNest frontend fejlesztője" style="display:block; width:108px; height:108px; object-fit:cover; border-radius:10px;">
                         </td>
                       </tr>
                       <tr>
-                        <td colspan="2" class="profile-mobile-desc">
-                          <p class="dark-text" style="margin:0; color:#292c35; font-size:14px; line-height:1.5;">Dávid az oldalak felületén dolgozik. Ő építi meg azt, amit közösen kitalálunk: hogy a designból működő, gyors és telefonon is kényelmes weboldal legyen.</p>
+                        <td colspan="2" class="profile-stable-desc" style="padding-top:10px;">
+                          <p class="dark-text" style="margin:0; color:#292c35; font-size:12.2px; line-height:1.5;">Dávid az oldalak felületén dolgozik. Ő építi meg azt, amit közösen kitalálunk: hogy a designból működő, gyors és telefonon is kényelmes weboldal legyen.</p>
                         </td>
                       </tr>
                     </table>
@@ -499,15 +439,15 @@
                       <tr class="stack">
                         <td width="50%" valign="top" class="bullet-col" style="width:50%; padding-right:12px;">
                           <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-                            <tr><td valign="top" style="padding:1px 7px 4px 0;"><span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#174532; color:#ffffff; font-size:8px; line-height:12px; text-align:center;">✓</span></td><td class="dark-text" style="padding:0 0 4px; color:#292c35; font-size:11.5px; line-height:1.35;">jelenleg milyen információk érhetők el Önökről</td></tr>
-                            <tr><td valign="top" style="padding:1px 7px 4px 0;"><span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#174532; color:#ffffff; font-size:8px; line-height:12px; text-align:center;">✓</span></td><td class="dark-text" style="padding:0 0 4px; color:#292c35; font-size:11.5px; line-height:1.35;">mennyire könnyű megtalálni a kapcsolatfelvételi lehetőségeket</td></tr>
-                            <tr><td valign="top" style="padding:1px 7px 0 0;"><span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#174532; color:#ffffff; font-size:8px; line-height:12px; text-align:center;">✓</span></td><td class="dark-text" style="padding:0; color:#292c35; font-size:11.5px; line-height:1.35;">telefonról mennyire áttekinthető az online megjelenés</td></tr>
+                            <tr><td valign="top" style="padding:1px 7px 4px 0;"><span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#174532; color:#ffffff; font-size:8px; line-height:12px; text-align:center;">✓</span></td><td class="dark-text" style="padding:0 0 4px; color:#292c35; font-size:12.2px; line-height:1.42;">jelenleg milyen információk érhetők el Önökről</td></tr>
+                            <tr><td valign="top" style="padding:1px 7px 4px 0;"><span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#174532; color:#ffffff; font-size:8px; line-height:12px; text-align:center;">✓</span></td><td class="dark-text" style="padding:0 0 4px; color:#292c35; font-size:12.2px; line-height:1.42;">mennyire könnyű megtalálni a kapcsolatfelvételi lehetőségeket</td></tr>
+                            <tr><td valign="top" style="padding:1px 7px 0 0;"><span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#174532; color:#ffffff; font-size:8px; line-height:12px; text-align:center;">✓</span></td><td class="dark-text" style="padding:0; color:#292c35; font-size:12.2px; line-height:1.42;">telefonról mennyire áttekinthető az online megjelenés</td></tr>
                           </table>
                         </td>
                         <td width="50%" valign="top" class="bullet-col bullet-col-second" style="width:50%; padding-left:12px;">
                           <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-                            <tr><td valign="top" style="padding:1px 7px 4px 0;"><span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#174532; color:#ffffff; font-size:8px; line-height:12px; text-align:center;">✓</span></td><td class="dark-text" style="padding:0 0 4px; color:#292c35; font-size:11.5px; line-height:1.35;">milyen bizalmi pontokat lenne érdemes megjeleníteni</td></tr>
-                            <tr><td valign="top" style="padding:1px 7px 0 0;"><span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#174532; color:#ffffff; font-size:8px; line-height:12px; text-align:center;">✓</span></td><td class="dark-text" style="padding:0; color:#292c35; font-size:11.5px; line-height:1.35;">mi lenne a megfelelő következő lépés egy weboldal létrehozásához</td></tr>
+                            <tr><td valign="top" style="padding:1px 7px 4px 0;"><span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#174532; color:#ffffff; font-size:8px; line-height:12px; text-align:center;">✓</span></td><td class="dark-text" style="padding:0 0 4px; color:#292c35; font-size:12.2px; line-height:1.42;">milyen bizalmi pontokat lenne érdemes megjeleníteni</td></tr>
+                            <tr><td valign="top" style="padding:1px 7px 0 0;"><span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#174532; color:#ffffff; font-size:8px; line-height:12px; text-align:center;">✓</span></td><td class="dark-text" style="padding:0; color:#292c35; font-size:12.2px; line-height:1.42;">mi lenne a megfelelő következő lépés egy weboldal létrehozásához</td></tr>
                           </table>
                         </td>
                       </tr>
