@@ -1,0 +1,196 @@
+#!/usr/bin/env python3
+"""Generate tokenized CodeNest outreach HTML files from the lead Excel.
+
+This script does not send emails. It only creates HTML files and a private manifest.
+"""
+from __future__ import annotations
+
+import argparse
+import csv
+import re
+import secrets
+import unicodedata
+from pathlib import Path
+from urllib.parse import quote
+
+from openpyxl import load_workbook
+
+CODE_NEST_EMAIL = "info.codenest.hu@gmail.com"
+PHONE = "+36 70 521 4412"
+
+INVALID_EMAIL_MARKERS = ("not found", "obfuscated", "nincs", "nem talál", "unknown", "ellenőriz")
+
+
+def slugify(value: str, max_len: int = 56) -> str:
+    value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode("ascii")
+    value = value.lower()
+    value = re.sub(r"[^a-z0-9]+", "-", value).strip("-")
+    return value[:max_len].strip("-") or "lead"
+
+
+def valid_email(value: object) -> bool:
+    if not value:
+        return False
+    s = str(value).strip().lower()
+    if any(marker in s for marker in INVALID_EMAIL_MARKERS):
+        return False
+    return bool(re.search(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", s))
+
+
+def first_sentence(text: object) -> str:
+    s = str(text or "").strip()
+    if not s:
+        return ""
+    return s
+
+
+def company_short(name: str) -> str:
+    # Remove common Hungarian company suffixes without leaving a trailing dot.
+    short = re.sub(r"\s+(Kft\.?|Bt\.?|Zrt\.?|ZRt\.?|Kkt\.?|Nonprofit\s+Kft\.?|Nonprofit)\s*$", "", name, flags=re.I)
+    short = re.sub(r"\s+", " ", short).strip(" .,-–")
+    return short or name
+
+
+def subject_for(row: dict[str, object]) -> str:
+    name = str(row.get("Név") or "").strip()
+    typ = str(row.get("Típus") or "").lower()
+    short = company_short(name)
+    if any(word in typ for word in ["vend", "tur", "száll", "hotel", "étter"]):
+        return f"{short} online bemutatkozása – rövid javaslat"
+    if any(word in typ for word in ["gyárt", "b2b", "ipar", "építő", "autó"]):
+        return f"{short} online megjelenése – rövid javaslat"
+    return f"{short} online megjelenése – rövid ötlet"
+
+
+def make_opening(row: dict[str, object]) -> str:
+    name = str(row.get("Név") or "").strip()
+    city = str(row.get("Város / régió") or "").strip()
+    typ = str(row.get("Típus") or "").strip()
+    custom = first_sentence(row.get("Személyes nyitás ötlet"))
+    if custom:
+        # Keep it, but make the first line consistent and safe.
+        return f"Röviden áttekintettem a nyilvánosan elérhető online megjelenésüket. {custom}"
+    parts = []
+    if city:
+        parts.append(f"{city} térségében működnek")
+    if typ:
+        parts.append(f"tevékenységük alapján a(z) {typ} területéhez kapcsolódnak")
+    extra = ", és ".join(parts) if parts else "a nyilvánosan elérhető információk alapján több ponton bemutatható lenne a tevékenységük"
+    return f"Röviden áttekintettem a nyilvánosan elérhető online megjelenésüket. A cégadatbázisok és nyilvános információk alapján a {name} {extra}."
+
+
+def make_value(row: dict[str, object]) -> str:
+    angle = first_sentence(row.get("Javasolt CodeNest angle"))
+    if angle:
+        return f"Véleményem szerint egy egyszerű, magyar nyelvű bemutatkozó oldal hasznos lehetne arra, hogy cégük tevékenysége, elérhetőségei, alapinformációi és bizalmi pontjai rendezettebben jelenjenek meg az online térben. Irányként például ez lehetne érdekes: {angle}."
+    return "Véleményem szerint egy egyszerű, magyar nyelvű bemutatkozó oldal hasznos lehetne arra, hogy cégük tevékenysége, elérhetőségei, alapinformációi és bizalmi pontjai rendezettebben jelenjenek meg az online térben."
+
+
+def make_help(row: dict[str, object]) -> str:
+    return "Abban segíthetünk, hogy egy érdeklődő, potenciális partner vagy álláskereső gyorsan megértse, mivel foglalkoznak, hol érhetők el, és milyen alapinformációkat érdemes tudni cégükről."
+
+
+def make_mailto(subject: str) -> str:
+    body = (
+        "Kedves Bors!\n\n"
+        "Köszönjük a megkeresést. Nyitottak vagyunk egy rövid egyeztetésre.\n\n"
+        "Nekünk ezek az időpontok lennének megfelelőek:\n"
+        "1. \n2. \n3. \n\n"
+        "Üdvözlettel,\n"
+    )
+    return f"mailto:{CODE_NEST_EMAIL}?subject={quote('Re: ' + subject)}&body={quote(body)}"
+
+
+def render(template: str, mapping: dict[str, str]) -> str:
+    html = template
+    for key, val in mapping.items():
+        html = html.replace("{{" + key + "}}", val)
+    leftovers = re.findall(r"{{[A-Z0-9_]+}}", html)
+    if leftovers:
+        raise ValueError(f"Unreplaced placeholders: {sorted(set(leftovers))}")
+    return html
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--excel", required=True)
+    ap.add_argument("--template", required=True)
+    ap.add_argument("--out-dir", required=True)
+    ap.add_argument("--sheet", default="Első kör javaslat")
+    ap.add_argument("--max", type=int, default=10)
+    ap.add_argument("--base-url", default="https://codenest.hu/email-preview")
+    args = ap.parse_args()
+
+    template = Path(args.template).read_text(encoding="utf-8")
+    wb = load_workbook(args.excel, read_only=True, data_only=True)
+    if args.sheet not in wb.sheetnames:
+        raise SystemExit(f"Sheet not found: {args.sheet}. Available: {wb.sheetnames}")
+    ws = wb[args.sheet]
+    headers = [str(c.value).strip() if c.value is not None else "" for c in next(ws.iter_rows(min_row=1, max_row=1))]
+
+    out_dir = Path(args.out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    manifest_rows = []
+    generated = 0
+    skipped = []
+
+    for row_cells in ws.iter_rows(min_row=2, values_only=True):
+        row = dict(zip(headers, row_cells))
+        name = str(row.get("Név") or "").strip()
+        email = str(row.get("Email") or "").strip()
+        if not name:
+            continue
+        if not valid_email(email):
+            skipped.append((name, email, "missing/invalid email"))
+            continue
+        if generated >= args.max:
+            break
+
+        subject = subject_for(row)
+        token = secrets.token_hex(5)
+        file_name = f"{slugify(name)}-{token}.html"
+        preview_url = f"{args.base_url.rstrip('/')}/{file_name}"
+
+        mapping = {
+            "COMPANY_NAME": name,
+            "COMPANY_SHORT": company_short(name),
+            "PREHEADER": f"Rövid javaslat a {company_short(name)} online megjelenéséhez.",
+            "OPENING_PARAGRAPH": make_opening(row),
+            "VALUE_PARAGRAPH": make_value(row),
+            "HELP_PARAGRAPH": make_help(row),
+            "REPLY_MAILTO": make_mailto(subject),
+        }
+        html = render(template, mapping)
+        (out_dir / file_name).write_text(html, encoding="utf-8")
+
+        manifest_rows.append({
+            "sorrend": row.get("Sorrend") or generated + 1,
+            "cegnev": name,
+            "email": email,
+            "subject": subject,
+            "html_file": file_name,
+            "preview_url": preview_url,
+            "status": "Tesztelendő",
+            "notes": "Privát manifest, ne töltsd fel publikus webre.",
+        })
+        generated += 1
+
+    with (out_dir / "manifest_private.csv").open("w", newline="", encoding="utf-8-sig") as f:
+        writer = csv.DictWriter(f, fieldnames=["sorrend", "cegnev", "email", "subject", "html_file", "preview_url", "status", "notes"])
+        writer.writeheader()
+        writer.writerows(manifest_rows)
+
+    with (out_dir / "skipped_private.csv").open("w", newline="", encoding="utf-8-sig") as f:
+        writer = csv.writer(f)
+        writer.writerow(["cegnev", "email", "reason"])
+        writer.writerows(skipped)
+
+    print(f"Generated HTML files: {generated}")
+    print(f"Skipped rows: {len(skipped)}")
+    print(f"Output folder: {out_dir}")
+    print("Reminder: upload only generated .html files if needed; do NOT upload manifest_private.csv.")
+
+
+if __name__ == "__main__":
+    main()

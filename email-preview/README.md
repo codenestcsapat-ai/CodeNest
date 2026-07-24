@@ -1,0 +1,2 @@
+/email-preview/*
+  X-Robots-Tag: noindex, nofollow, noarchive
