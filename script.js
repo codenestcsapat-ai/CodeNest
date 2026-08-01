@@ -786,6 +786,12 @@ document.addEventListener("DOMContentLoaded", () => {
             from_name: nameInput.value.trim(),
             from_email: emailInput.value.trim(),
             reply_to: emailInput.value.trim(),
+            email_language: currentLang === "hu" ? "hu" : "en",
+            is_hu: currentLang === "hu",
+            is_en: currentLang !== "hu",
+            auto_reply_subject: currentLang === "hu"
+                ? "Megkaptuk megkeresését – CodeNest"
+                : "We received your inquiry – CodeNest",
             project_type: projectInput.value,
             project_label: projectInput.options[projectInput.selectedIndex].textContent.trim(),
             message: messageInput.value.trim(),

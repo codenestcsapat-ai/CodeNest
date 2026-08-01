@@ -26,7 +26,7 @@ Csatlakoztasd a Gmail-fiókot az **Email Services** oldalon, majd futtasd a **Te
 - To Email: `{{from_email}}`
 - From Name: `CodeNest`
 - Reply-To: `info.codenest.hu@gmail.com`
-- Subject: `Megkaptuk megkeresését – CodeNest`
+- Subject: `{{auto_reply_subject}}`
 - Content: másold be a `codenest-contact-auto-reply.html` teljes tartalmát a Code Editorba.
 
 Az Auto-Reply sablon **Settings** fülén:
