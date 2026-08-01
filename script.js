@@ -527,6 +527,7 @@
     const EMAILJS_PUBLIC_KEY = "cuE-J3-CtljI_thl6";
     const EMAILJS_SERVICE_ID = "service_ztbj0ts";
     const EMAILJS_TEMPLATE_ID = "template_xmguabk";
+    const EMAILJS_AUTO_RESPONSE_TEMPLATE_ID = "template_7spn90s";
     const PUBLIC_CONTACT_EMAIL = "info.codenest.hu@gmail.com";
     const INTERNAL_CONTACT_EMAIL = PUBLIC_CONTACT_EMAIL;
 
@@ -869,6 +870,33 @@ document.addEventListener("DOMContentLoaded", () => {
                 announce(successMessage);
                 contactForm.reset();
                 restoreSubmitButton();
+
+                // EmailJS limits requests to one per second. Send the visitor's
+                // confirmation explicitly so delivery does not depend on a
+                // dashboard-side linked-template setting.
+                window.setTimeout(() => {
+                    const autoReplyParams = {
+                        ...templateParams,
+                        to_email: templateParams.from_email,
+                        to_name: templateParams.from_name
+                    };
+
+                    emailjs.send(
+                        EMAILJS_SERVICE_ID,
+                        EMAILJS_AUTO_RESPONSE_TEMPLATE_ID,
+                        autoReplyParams
+                    ).then((autoResponse) => {
+                        console.info("EmailJS auto-response succeeded", {
+                            status: autoResponse && autoResponse.status,
+                            text: autoResponse && autoResponse.text
+                        });
+                    }).catch((autoResponseError) => {
+                        console.warn("EmailJS auto-response failed", {
+                            status: autoResponseError && autoResponseError.status,
+                            text: autoResponseError && autoResponseError.text
+                        });
+                    });
+                }, 1100);
             })
             .catch(handleSendError);
     });

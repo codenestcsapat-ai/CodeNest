@@ -48,6 +48,6 @@ Az új fiókból másold ki ezt a négy értéket, majd írd át őket a `script
 - Gmail Service ID → `EMAILJS_SERVICE_ID`
 - belső értesítési Template ID → `EMAILJS_TEMPLATE_ID`
 
-Ezután nyisd meg a belső értesítési sablont, az **Auto-Reply** fülön válaszd ki a `CodeNest Contact Auto-Reply` linked template-et, majd mentsd el. Az automatikus válasz Template ID-ját nem kell a JavaScriptben megadni.
+Az automatikus választ a weboldal JavaScriptje közvetlenül küldi el 1,1 másodperccel a belső értesítés után. A belső értesítési sablon **Auto-Reply** fülén ezért ne legyen linked template beállítva, különben az érdeklődő két visszaigazolást kaphat.
 
 Végül küldj egy valódi tesztet a codenest.hu űrlapjáról. A belső levélnek azonnal, az automatikus válasznak körülbelül egy másodperccel később kell megérkeznie.
