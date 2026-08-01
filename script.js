@@ -533,7 +533,9 @@
 
     // EmailJS indítása
     if (typeof emailjs !== 'undefined') {
-        emailjs.init(EMAILJS_PUBLIC_KEY);
+        emailjs.init({
+            publicKey: EMAILJS_PUBLIC_KEY
+        });
     }
 
 /* ========================================
@@ -823,9 +825,14 @@ document.addEventListener("DOMContentLoaded", () => {
             const body = encodeURIComponent(
                 `Név: ${templateParams.from_name}\nEmail: ${templateParams.from_email}\nProjekt: ${templateParams.project_type}\n\n${templateParams.message}`
             );
-            const intro = currentLang === "hu"
-                ? "Valami nem sikerült az üzenet küldése közben. Kérlek, írj közvetlenül az "
-                : "Something went wrong while sending. Please email us directly at ";
+            const isEmailServiceAuthError = error && error.status === 412;
+            const intro = isEmailServiceAuthError
+                ? (currentLang === "hu"
+                    ? "Az e-mail szolgáltatás átmenetileg nem elérhető. Kérlek, írj közvetlenül az "
+                    : "The email service is temporarily unavailable. Please email us directly at ")
+                : (currentLang === "hu"
+                    ? "Valami nem sikerült az üzenet küldése közben. Kérlek, írj közvetlenül az "
+                    : "Something went wrong while sending. Please email us directly at ");
             statusEl.style.color = "#b91c1c";
             statusEl.textContent = intro;
             const fallbackLink = document.createElement("a");
