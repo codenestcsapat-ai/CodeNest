@@ -2,6 +2,11 @@
 
 Az új EmailJS-fiók tulajdonosa: `info.codenest.hu@gmail.com`.
 
+- Service ID: `service_ztbj0ts`
+- belső értesítési Template ID: `template_xmguabk`
+- automatikus válasz Template ID: `template_7spn90s`
+- Public Key: `cuE-J3-CtljI_thl6`
+
 ## 1. Email service
 
 Csatlakoztasd a Gmail-fiókot az **Email Services** oldalon, majd futtasd a **Test Service** tesztet.

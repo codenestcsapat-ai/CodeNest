@@ -524,9 +524,9 @@
        EMAILJS CONFIG
        ======================================== */
 
-    const EMAILJS_PUBLIC_KEY = "l6VpSyq4uewrDcg_u";
+    const EMAILJS_PUBLIC_KEY = "cuE-J3-CtljI_thl6";
     const EMAILJS_SERVICE_ID = "service_ztbj0ts";
-    const EMAILJS_TEMPLATE_ID = "template_r5qgyvq";
+    const EMAILJS_TEMPLATE_ID = "template_xmguabk";
     const PUBLIC_CONTACT_EMAIL = "info.codenest.hu@gmail.com";
     const INTERNAL_CONTACT_EMAIL = PUBLIC_CONTACT_EMAIL;
 
