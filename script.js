@@ -525,11 +525,10 @@
        ======================================== */
 
     const EMAILJS_PUBLIC_KEY = "l6VpSyq4uewrDcg_u";
-    const EMAILJS_SERVICE_ID = "service_icuuty8";
-    const EMAILJS_TEMPLATE_ID = "template_hdly37v";
-    const EMAILJS_AUTO_RESPONSE_TEMPLATE_ID = "template_auto_response";
-    const INTERNAL_CONTACT_EMAIL = "codenest.csapat@gmail.com";
+    const EMAILJS_SERVICE_ID = "service_ztbj0ts";
+    const EMAILJS_TEMPLATE_ID = "template_r5qgyvq";
     const PUBLIC_CONTACT_EMAIL = "info.codenest.hu@gmail.com";
+    const INTERNAL_CONTACT_EMAIL = PUBLIC_CONTACT_EMAIL;
 
     // EmailJS indítása
     if (typeof emailjs !== 'undefined') {
@@ -788,6 +787,7 @@ document.addEventListener("DOMContentLoaded", () => {
             from_email: emailInput.value.trim(),
             reply_to: emailInput.value.trim(),
             project_type: projectInput.value,
+            project_label: projectInput.options[projectInput.selectedIndex].textContent.trim(),
             message: messageInput.value.trim(),
             to_email: INTERNAL_CONTACT_EMAIL,
             contact_email: PUBLIC_CONTACT_EMAIL,
@@ -863,24 +863,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 announce(successMessage);
                 contactForm.reset();
                 restoreSubmitButton();
-
-                // Respect EmailJS's one-request-per-second limit. Auto-response
-                // failure must not turn a successfully delivered inquiry into an error.
-                window.setTimeout(() => {
-                    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_AUTO_RESPONSE_TEMPLATE_ID, {
-                        to_email: templateParams.from_email,
-                        to_name: templateParams.from_name,
-                        from_name: "CodeNest",
-                        from_email: PUBLIC_CONTACT_EMAIL,
-                        reply_to: PUBLIC_CONTACT_EMAIL,
-                        contact_email: PUBLIC_CONTACT_EMAIL
-                    }).catch((autoResponseError) => {
-                        console.warn("EmailJS auto-response failed", {
-                            status: autoResponseError && autoResponseError.status,
-                            text: autoResponseError && autoResponseError.text
-                        });
-                    });
-                }, 1100);
             })
             .catch(handleSendError);
     });
