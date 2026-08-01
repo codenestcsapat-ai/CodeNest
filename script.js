@@ -525,7 +525,7 @@
        ======================================== */
 
     const EMAILJS_PUBLIC_KEY = "l6VpSyq4uewrDcg_u";
-    const EMAILJS_SERVICE_ID = "service_mkhy8en";
+    const EMAILJS_SERVICE_ID = "service_icuuty8";
     const EMAILJS_TEMPLATE_ID = "template_hdly37v";
     const EMAILJS_AUTO_RESPONSE_TEMPLATE_ID = "template_auto_response";
     const INTERNAL_CONTACT_EMAIL = "codenest.csapat@gmail.com";
