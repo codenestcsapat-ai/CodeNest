@@ -1,26 +1,18 @@
 export const teamIntro = {
-  title: "Ketten visszük végig a projektet.",
-  text:
-    "A CodeNest mögött Bors és Dávid áll. Kis, fókuszált fejlesztőstúdióként dolgozunk: kevesebb projektet vállalunk egyszerre, de azokat közvetlenül visszük végig az első beszélgetéstől az éles indulásig.",
-  trustNotes: [
-    "Rövid kommunikációs út",
-    "Gyorsabb döntések",
-    "Kevesebb félreértés",
-    "Személyesebb együttműködés",
-  ],
+  title: "Ketten dolgozunk veled közvetlenül.",
+  text: "A CodeNest mögött Bors és Dávid áll. Fiatal magyar vállalkozásként dolgozunk: nem nagy csapatnak akarunk látszani, hanem érthetően egyeztetni, jól összerakni az oldalt, és átadni úgy, hogy később is használható legyen.",
+  trustNotes: ["Közvetlen egyeztetés", "Érthető feladatok", "Gyakorlati hozzáállás", "Átadható működés"],
 };
 
 export const team = [
   {
     name: "Bors",
-    role: "Fejlesztés, rendszerek, backend",
-    shortText:
-      "A rendszerlogikáért, adatstruktúrákért, adminfelületekért és technikai működésért felel.",
+    role: "Felépítés, fejlesztés, szerkeszthető működés",
+    shortText: "A weboldal szerkezetét, a fejlesztési részeket és a szerkeszthető felületek működését tartja kézben.",
   },
   {
     name: "Dávid",
-    role: "Tervezés, frontend, projektkommunikáció",
-    shortText:
-      "A felhasználói élményért, vizuális megvalósításért és a projekt közös ritmusáért felel.",
+    role: "Frontend, megvalósítás, közös egyeztetés",
+    shortText: "A felület összeállításán, a HTML/CSS/JS megvalósításon és a gyakorlati projektkommunikáción dolgozik.",
   },
 ];

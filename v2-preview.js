@@ -1,7 +1,26 @@
-import { siteContent } from "./data/site-content.js";
-import { services } from "./data/services.js";
-import { projects } from "./data/projects.js";
-import { teamIntro, team } from "./data/team.js";
+import {
+  getLocalizedData,
+  getUiTranslations,
+  normalizeLanguage,
+  resolveInitialLanguage,
+  setDocumentLanguage,
+  storeLanguage,
+  supportedLanguages,
+  updateUrlLanguage,
+  withLanguageParam,
+} from "./data/i18n.js";
+
+let currentLanguage = resolveInitialLanguage();
+let localizedData = getLocalizedData(currentLanguage);
+let { siteContent, services, projects, teamIntro, team } = localizedData;
+let ui = localizedData.ui;
+let sectionNavigationCleanup = null;
+
+const refreshLocalizedData = () => {
+  localizedData = getLocalizedData(currentLanguage);
+  ({ siteContent, services, projects, teamIntro, team } = localizedData);
+  ui = getUiTranslations(currentLanguage);
+};
 
 const fallback = (value, fallbackText = "") => {
   if (typeof value === "string" && value.trim()) return value;
@@ -21,6 +40,90 @@ const createElement = (tag, className, text) => {
   return element;
 };
 
+const alternateLanguageUrls = {
+  hu: "https://codenest.hu/",
+  en: "https://codenest.hu/en/",
+  de: "https://codenest.hu/de/",
+  "x-default": "https://codenest.hu/",
+};
+
+const resolveRootAssetPath = (assetPath) => {
+  const value = fallback(assetPath, "");
+  if (!value || value.startsWith("/") || value.startsWith("#") || (value.startsWith("http://") || value.startsWith("https://")) || value.startsWith("mailto:")) return value;
+  return new URL(value, import.meta.url).href;
+};
+
+const setMetaContent = (attribute, key, content) => {
+  const value = fallback(content, "");
+  if (!value) return;
+
+  let element = document.head.querySelector(`meta[${attribute}="${key}"]`);
+  if (!element) {
+    element = document.createElement("meta");
+    element.setAttribute(attribute, key);
+    document.head.append(element);
+  }
+  element.setAttribute("content", value);
+};
+
+const setCanonicalHref = (href) => {
+  const value = fallback(href, "");
+  if (!value) return;
+
+  let element = document.head.querySelector('link[rel="canonical"]');
+  if (!element) {
+    element = document.createElement("link");
+    element.rel = "canonical";
+    document.head.append(element);
+  }
+  element.href = value;
+};
+
+const setAlternateLanguageLinks = () => {
+  document.head.querySelectorAll('link[rel="alternate"][hreflang]').forEach((element) => element.remove());
+  Object.entries(alternateLanguageUrls).forEach(([language, href]) => {
+    const element = document.createElement("link");
+    element.rel = "alternate";
+    element.hreflang = language;
+    element.href = href;
+    document.head.append(element);
+  });
+};
+
+const renderSeoMeta = () => {
+  const seo = siteContent.seo || {};
+  const title = fallback(seo.title, "CodeNest");
+  const description = fallback(seo.description, siteContent.hero?.subheadline);
+  const ogTitle = fallback(seo.ogTitle, title);
+  const ogDescription = fallback(seo.ogDescription, description);
+  const canonicalUrl = fallback(seo.canonicalUrl, "https://codenest.hu/");
+
+  document.title = title;
+  setMetaContent("name", "description", description);
+  setMetaContent("property", "og:type", "website");
+  setMetaContent("property", "og:title", ogTitle);
+  setMetaContent("property", "og:description", ogDescription);
+  setMetaContent("property", "og:url", canonicalUrl);
+  setMetaContent("name", "twitter:card", "summary");
+  setCanonicalHref(canonicalUrl);
+  setAlternateLanguageLinks();
+};
+
+const createLanguageFlag = (language) => {
+  const src = fallback(language.flagSrc, "");
+  const flag = src ? createElement("img", "language-flag", "") : createElement("span", "language-flag language-flag-fallback", "");
+
+  if (src) {
+    flag.src = resolveRootAssetPath(src);
+    flag.alt = "";
+    flag.loading = "lazy";
+    flag.decoding = "async";
+  }
+
+  flag.setAttribute("aria-hidden", "true");
+  return flag;
+};
+
 const clearAndAppend = (selector, children) => {
   const container = document.querySelector(selector);
   if (!container) return;
@@ -29,25 +132,295 @@ const clearAndAppend = (selector, children) => {
 
 const getArray = (value) => (Array.isArray(value) ? value : []);
 
+const getFooterCopy = () => {
+  const copy = {
+    hu: {
+      statement: "Haszn\u00e1lhat\u00f3, szerkeszthet\u0151 weboldalak v\u00e1llalkoz\u00e1soknak, int\u00e9zm\u00e9nyeknek \u00e9s helyi szervezeteknek.",
+      note: "K\u00e9t fiatal fejleszt\u0151k\u00e9nt olyan webes alapokat \u00e9p\u00edt\u00fcnk, amelyeket nem csak \u00e1tadni, hanem k\u00e9s\u0151bb haszn\u00e1lni, friss\u00edteni \u00e9s tov\u00e1bbfejleszteni is k\u00f6nny\u0171.",
+      pagesTitle: "Gyors utak",
+      contactTitle: "Kapcsolat",
+      siteLabel: "codenest.hu",
+      legalLinks: [
+        { label: "Impresszum", href: "legal-hu.html#impresszum" },
+        { label: "Adatkezel\u00e9s", href: "legal-hu.html#adatkezeles" },
+      ],
+    },
+    en: {
+      statement: "Usable, editable websites for businesses, institutions and local organizations.",
+      note: "As two young developers, we build web foundations that are not only handed over, but remain easy to use, update and improve later.",
+      pagesTitle: "Quick links",
+      contactTitle: "Contact",
+      siteLabel: "codenest.hu",
+      legalLinks: [
+        { label: "Impressum", href: "legal-hu.html#impresszum" },
+        { label: "Privacy", href: "legal-hu.html#adatkezeles" },
+      ],
+    },
+    de: {
+      statement: "Nutzbare, editierbare Websites f\u00fcr Unternehmen, Institutionen und lokale Organisationen.",
+      note: "Als zwei junge Entwickler bauen wir Web-Grundlagen, die nicht nur \u00fcbergeben werden, sondern sp\u00e4ter leicht nutzbar, aktualisierbar und erweiterbar bleiben.",
+      pagesTitle: "Schnelle Wege",
+      contactTitle: "Kontakt",
+      siteLabel: "codenest.hu",
+      legalLinks: [
+        { label: "Impressum", href: "legal-hu.html#impresszum" },
+        { label: "Datenschutz", href: "legal-hu.html#adatkezeles" },
+      ],
+    },
+  };
+  return copy[currentLanguage] || copy.hu;
+};
+
+const getFooterNavigationLinks = () => {
+  const wantedHrefs = new Set(["#munkak", "#folyamat", "#kapcsolat"]);
+  return getArray(siteContent.footer?.links).filter((item) => wantedHrefs.has(fallback(item.href, "")));
+};
+
+const createNavigationLinks = (items) =>
+  items.map((item) => {
+    const link = createElement("a", "", fallback(item.label, "Men?"));
+    link.href = fallback(item.href, "#hero");
+    return link;
+  });
+
 const renderNavigation = () => {
   const items = Array.isArray(siteContent.navigation?.items)
     ? siteContent.navigation.items
     : [];
 
-  const links = items.map((item) => {
-    const link = createElement("a", "", fallback(item.label, "Menü"));
-    link.href = fallback(item.href, "#hero");
-    return link;
+  const desktopNav = document.querySelector('[data-render="navigation"]');
+  const mobileNav = document.querySelector('[data-render="mobile-navigation"]');
+  const menu = document.getElementById("mobile-menu");
+
+  if (desktopNav) {
+    desktopNav.setAttribute("aria-label", ui.navigationLabel);
+    desktopNav.replaceChildren(...createNavigationLinks(items));
+  }
+
+  if (mobileNav) {
+    mobileNav.setAttribute("aria-label", ui.mobileMenuLabel);
+    mobileNav.replaceChildren(...createNavigationLinks(items));
+  }
+
+  if (menu) menu.setAttribute("aria-label", ui.mobileMenuLabel);
+
+  const brand = document.querySelector(".site-header .brand");
+  if (brand) brand.setAttribute("aria-label", fallback(ui.homeLabel, "CodeNest f\u0151oldal"));
+};
+
+const createLanguageOption = (language) => {
+  const button = createElement("button", "language-option", "");
+  const isActive = language.code === currentLanguage;
+  button.type = "button";
+  button.dataset.language = language.code;
+  button.setAttribute("aria-label", language.name);
+  button.setAttribute("aria-pressed", String(isActive));
+  button.classList.toggle("is-active", isActive);
+  button.append(
+    createLanguageFlag(language),
+    createElement("span", "language-name", language.name),
+    createElement("span", "language-check", isActive ? "✓" : "")
+  );
+  return button;
+};
+
+const closeLanguageDropdowns = () => {
+  document.querySelectorAll(".language-switcher.is-open").forEach((switcher) => {
+    const trigger = switcher.querySelector("[data-language-trigger]");
+    const dropdown = switcher.querySelector(".language-dropdown");
+    switcher.classList.remove("is-open");
+    if (trigger) trigger.setAttribute("aria-expanded", "false");
+    if (dropdown) dropdown.hidden = true;
+  });
+};
+
+const toggleLanguageDropdown = (trigger) => {
+  const switcher = trigger.closest(".language-switcher");
+  const dropdown = switcher?.querySelector(".language-dropdown");
+  if (!switcher || !dropdown) return;
+  const shouldOpen = trigger.getAttribute("aria-expanded") !== "true";
+  closeLanguageDropdowns();
+  switcher.classList.toggle("is-open", shouldOpen);
+  trigger.setAttribute("aria-expanded", String(shouldOpen));
+  dropdown.hidden = !shouldOpen;
+};
+
+const renderLanguageSwitchers = () => {
+  const current = supportedLanguages.find((language) => language.code === currentLanguage) || supportedLanguages[0];
+
+  document.querySelectorAll('[data-render="language-switcher"]').forEach((switcher) => {
+    switcher.classList.add("is-compact-selector");
+    switcher.setAttribute("aria-label", ui.languageLabel);
+
+    const trigger = createElement("button", "language-trigger", "");
+    trigger.type = "button";
+    trigger.dataset.languageTrigger = "true";
+    trigger.setAttribute("aria-haspopup", "listbox");
+    trigger.setAttribute("aria-expanded", "false");
+    trigger.setAttribute("aria-label", `${ui.languageLabel}: ${current.name}`);
+    trigger.append(
+      createLanguageFlag(current),
+      createElement("span", "language-current", current.label),
+      createElement("span", "language-chevron", "⌄")
+    );
+
+    const dropdown = createElement("div", "language-dropdown");
+    dropdown.hidden = true;
+    dropdown.setAttribute("role", "listbox");
+    dropdown.append(...supportedLanguages.map(createLanguageOption));
+    switcher.replaceChildren(trigger, dropdown);
   });
 
-  if (links.length) clearAndAppend('[data-render="navigation"]', links);
+  document.querySelectorAll('[data-render="mobile-language-switcher"]').forEach((switcher) => {
+    switcher.classList.add("is-mobile-language-list");
+    switcher.setAttribute("aria-label", ui.languageLabel);
+    const label = createElement("p", "language-section-label", ui.languageLabel);
+    const list = createElement("div", "language-list");
+    list.append(...supportedLanguages.map(createLanguageOption));
+    switcher.replaceChildren(label, list);
+  });
+
+  const menuButton = document.querySelector(".menu-toggle");
+  if (menuButton) {
+    const isOpen = menuButton.getAttribute("aria-expanded") === "true";
+    menuButton.setAttribute("aria-label", isOpen ? ui.closeMenu : ui.openMenu);
+  }
+};
+
+const getHeroMockupFallback = () => {
+  const fallbacks = {
+    hu: {
+      ariaLabel: "CodeNest \u00e1ltal \u00e9p\u00edtett haszn\u00e1lhat\u00f3 webes rendszer el\u0151n\u00e9zete",
+      publicSite: "Publikus oldal",
+      newsTitle: "H\u00edrek \u00e9s inform\u00e1ci\u00f3k",
+      adminArea: "Adminfel\u00fclet",
+      documents: "Dokumentumok",
+      newPost: "\u00daj h\u00edr",
+      mobileView: "Mobil n\u00e9zet",
+      rows: [
+        { label: "Test\u00fcleti jegyz\u0151k\u00f6nyv", status: "K\u00f6zz\u00e9t\u00e9ve" },
+        { label: "Ny\u00e1ri nyitvatart\u00e1s", status: "V\u00e1zlat" },
+        { label: "Rendezv\u00e9ny megh\u00edv\u00f3", status: "K\u00f6zz\u00e9t\u00e9ve" },
+      ],
+    },
+    en: {
+      ariaLabel: "Preview of a usable web system built by CodeNest",
+      publicSite: "Public page",
+      newsTitle: "News and information",
+      adminArea: "Admin area",
+      documents: "Documents",
+      newPost: "New post",
+      mobileView: "Mobile view",
+      rows: [
+        { label: "Council minutes", status: "Published" },
+        { label: "Summer opening hours", status: "Draft" },
+        { label: "Event invitation", status: "Published" },
+      ],
+    },
+    de: {
+      ariaLabel: "Vorschau eines nutzbaren Websystems von CodeNest",
+      publicSite: "\u00d6ffentliche Seite",
+      newsTitle: "Nachrichten und Informationen",
+      adminArea: "Adminbereich",
+      documents: "Dokumente",
+      newPost: "Neue Nachricht",
+      mobileView: "Mobilansicht",
+      rows: [
+        { label: "Sitzungsprotokoll", status: "Ver\u00f6ffentlicht" },
+        { label: "Sommer\u00f6ffnungszeiten", status: "Entwurf" },
+        { label: "Einladung zur Veranstaltung", status: "Ver\u00f6ffentlicht" },
+      ],
+    },
+  };
+  return fallbacks[currentLanguage] || fallbacks.hu;
+};
+
+const getHeroEnhancementCopy = () => {
+  const copy = {
+    hu: {
+      editableTitle: "Szerkeszthet\u0151 tartalom",
+      editableText: "H\u00edrek, dokumentumok, oldalak",
+      saved: "V\u00e1ltoz\u00e1s mentve",
+      flow: ["Tartalom", "Admin", "\u00c1tad\u00e1s"],
+    },
+    en: {
+      editableTitle: "Editable content",
+      editableText: "News, documents, pages",
+      saved: "Changes saved",
+      flow: ["Content", "Admin", "Handover"],
+    },
+    de: {
+      editableTitle: "Editierbare Inhalte",
+      editableText: "News, Dokumente, Seiten",
+      saved: "\u00c4nderung gespeichert",
+      flow: ["Inhalt", "Admin", "\u00dcbergabe"],
+    },
+  };
+  return copy[currentLanguage] || copy.hu;
+};
+
+const renderHeroVisualEnhancements = (heroVisual) => {
+  if (!heroVisual) return;
+
+  const copy = getHeroEnhancementCopy();
+  heroVisual.querySelectorAll("[data-hero-enhancement]").forEach((element) => element.remove());
+
+  const systemStrip = createElement("div", "hero-system-strip");
+  systemStrip.dataset.heroEnhancement = "true";
+  getArray(copy.flow).forEach((label) => {
+    systemStrip.append(createElement("span", "", label));
+  });
+
+  const editableBadge = createElement("div", "hero-editable-badge");
+  editableBadge.dataset.heroEnhancement = "true";
+  const badgeIcon = createElement("span", "hero-editable-icon");
+  badgeIcon.setAttribute("aria-hidden", "true");
+  const badgeText = createElement("span", "hero-editable-text");
+  badgeText.append(
+    createElement("strong", "", copy.editableTitle),
+    createElement("small", "", copy.editableText)
+  );
+  editableBadge.append(badgeIcon, badgeText);
+
+  const saveHint = createElement("div", "hero-save-hint");
+  saveHint.dataset.heroEnhancement = "true";
+  saveHint.append(createElement("span", "", copy.saved));
+
+  heroVisual.append(systemStrip, editableBadge, saveHint);
+};
+
+const renderHeroMockup = () => {
+  const fallbackMockup = getHeroMockupFallback();
+  const mockup = ui.heroMockup || fallbackMockup;
+  const rows = getArray(mockup.rows);
+  const heroVisual = document.querySelector(".hero-visual");
+
+  if (heroVisual) {
+    heroVisual.setAttribute("aria-label", fallback(mockup.ariaLabel, fallbackMockup.ariaLabel));
+    renderHeroVisualEnhancements(heroVisual);
+  }
+
+  setText(".mockup-public .mockup-label", mockup.publicSite, fallbackMockup.publicSite);
+  setText(".mockup-public h2", mockup.newsTitle, fallbackMockup.newsTitle);
+  setText(".mockup-admin .mockup-label", mockup.adminArea, fallbackMockup.adminArea);
+  setText(".mockup-admin h3", mockup.documents, fallbackMockup.documents);
+  setText(".mockup-action", mockup.newPost, fallbackMockup.newPost);
+  setText(".mockup-mobile .mockup-label", mockup.mobileView, fallbackMockup.mobileView);
+
+  document.querySelectorAll(".mockup-admin .admin-row").forEach((row, index) => {
+    const item = rows[index] || fallbackMockup.rows[index] || {};
+    const label = row.querySelector("span");
+    const status = row.querySelector("strong");
+    if (label) label.textContent = fallback(item.label, label.textContent);
+    if (status) status.textContent = fallback(item.status, status.textContent);
+  });
 };
 
 const renderHero = () => {
   const hero = siteContent.hero || {};
 
-  setText('[data-render="hero-headline"]', hero.headline, "CodeNest V2");
-  setText('[data-render="hero-subheadline"]', hero.subheadline, "V2 preview tartalom.");
+  setText('[data-render="hero-headline"]', hero.headline, "CodeNest");
+  setText('[data-render="hero-subheadline"]', hero.subheadline, "Érthető, szerkeszthető weboldalak.");
   setText('[data-render="hero-primary-cta"]', hero.primaryCta, "Kapcsolat");
   setText('[data-render="hero-secondary-cta"]', hero.secondaryCta, "Mit építünk");
 
@@ -62,67 +435,201 @@ const renderHero = () => {
     .slice(0, 3);
   const supportChips = supportItems.map((item) => createElement("span", "hero-chip", item));
   if (supportChips.length) clearAndAppend('[data-render="hero-support-chips"]', supportChips);
+  renderHeroMockup();
 };
 
 const renderProblem = () => {
   const problem = siteContent.problem || {};
-  const points = getArray(problem.painPoints).length ? getArray(problem.painPoints) : getArray(problem.points);
+  const visualCopy = getProblemVisualCopy();
 
   setText('[data-render="problem-title"]', problem.title, "Problem");
   setText('[data-render="problem-text"]', problem.text, "V2 problem framing.");
 
-  const cards = points.map((point) => {
-    const card = createElement("article", "card compact-card");
-    if (typeof point === "string") {
-      card.append(createElement("p", "", fallback(point, "V2 problémapont.")));
-      return card;
-    }
-
-    card.append(
-      createElement("h3", "", fallback(point.title, "Probléma")),
-      createElement("p", "", fallback(point.text, "V2 problémapont."))
-    );
-    return card;
-  });
-
-  if (cards.length) clearAndAppend('[data-render="problem-points"]', cards);
-
-  renderProblemComparison(problem.beforeAfter);
+  renderProblemComparison(problem.beforeAfter, visualCopy);
+  renderProblemInsightStrip(visualCopy);
 
   const solutionElement = document.querySelector('[data-render="problem-solution"]');
   if (solutionElement) {
-    const solutionText = fallback(problem.solution, "");
+    const solutionText = fallback(problem.solution, visualCopy.statement);
+    solutionElement.classList.add("problem-statement-strip");
     solutionElement.textContent = solutionText;
     solutionElement.hidden = !solutionText;
   }
 };
 
-const renderProblemComparison = (comparison) => {
+const getProblemVisualCopy = () => {
+  const copy = {
+    hu: {
+      beforeLabel: "El\u0151tte",
+      afterLabel: "Ut\u00e1na",
+      transitionLabel: "\u00dajragondoljuk",
+      oldPageTitle: "R\u00e9gi oldal",
+      oldNews: "2022-es h\u00edr",
+      oldContact: "Nehezen tal\u00e1lhat\u00f3 kapcsolat",
+      oldMobile: "Mobilon zs\u00fafolt",
+      newPageTitle: "Rendezett oldal",
+      adminTitle: "Tartalomkezel\u00e9s",
+      saved: "V\u00e1ltoz\u00e1s mentve",
+      publicStatus: "Publikus",
+      mobileTitle: "Mobilon is k\u00e9nyelmes",
+      insightLabel: "A v\u00e1ltoz\u00e1s l\u00e9nyege",
+      insights: ["Friss\u00edthet\u0151 tartalom", "\u00c1tl\u00e1that\u00f3 szerkezet", "K\u00f6nnyebb \u00e1tad\u00e1s"],
+      statement: "Olyan weboldalakat k\u00e9sz\u00edt\u00fcnk, amelyek nem csak els\u0151 r\u00e1n\u00e9z\u00e9sre sz\u00e9pek, hanem a mindennapi haszn\u00e1latban is seg\u00edtenek: a l\u00e1togat\u00f3nak eligazodni, az \u00fcgyf\u00e9lnek pedig friss\u00edteni, \u00e1tadni \u00e9s hosszabb t\u00e1von m\u0171k\u00f6dtetni.",
+    },
+    en: {
+      beforeLabel: "Before",
+      afterLabel: "After",
+      transitionLabel: "We reorganize it",
+      oldPageTitle: "Old website",
+      oldNews: "2022 news item",
+      oldContact: "Contact is hard to find",
+      oldMobile: "Crowded on mobile",
+      newPageTitle: "Clear website",
+      adminTitle: "Content admin",
+      saved: "Changes saved",
+      publicStatus: "Public",
+      mobileTitle: "Comfortable on mobile",
+      insightLabel: "What changes",
+      insights: ["Editable content", "Clear structure", "Easier handover"],
+      statement: "We build websites that are not only good-looking at first glance, but also help in everyday use: visitors can find their way around, and clients can update, hand over and maintain the site long term.",
+    },
+    de: {
+      beforeLabel: "Vorher",
+      afterLabel: "Nachher",
+      transitionLabel: "Wir ordnen es neu",
+      oldPageTitle: "Alte Website",
+      oldNews: "Nachricht aus 2022",
+      oldContact: "Kontakt schwer zu finden",
+      oldMobile: "Auf Mobilger\u00e4ten \u00fcberladen",
+      newPageTitle: "Klare Website",
+      adminTitle: "Content-Admin",
+      saved: "\u00c4nderung gespeichert",
+      publicStatus: "\u00d6ffentlich",
+      mobileTitle: "Auch mobil bequem",
+      insightLabel: "Was sich \u00e4ndert",
+      insights: ["Editierbare Inhalte", "Klare Struktur", "Einfachere \u00dcbergabe"],
+      statement: "Wir bauen Websites, die nicht nur auf den ersten Blick gut aussehen, sondern im Alltag helfen: Besucher finden sich leichter zurecht, und Kunden k\u00f6nnen die Website langfristig aktualisieren, \u00fcbergeben und betreiben.",
+    },
+  };
+  return copy[currentLanguage] || copy.hu;
+};
+
+const renderProblemInsightStrip = (visualCopy) => {
+  const container = document.querySelector('[data-render="problem-points"]');
+  if (!container) return;
+
+  container.className = "problem-insight-strip";
+  const label = createElement("span", "problem-insight-label", visualCopy.insightLabel);
+  const list = createElement("div", "problem-insights");
+  getArray(visualCopy.insights).forEach((item) => list.append(createElement("span", "", item)));
+  container.replaceChildren(label, list);
+};
+
+const renderProblemComparison = (comparison, visualCopy = getProblemVisualCopy()) => {
   const container = document.querySelector('[data-render="problem-comparison"]');
   if (!container) return;
 
   const beforeItems = getArray(comparison?.before);
   const afterItems = getArray(comparison?.after);
-  if (!beforeItems.length && !afterItems.length) return;
 
-  const before = createComparisonColumn("Előtte", beforeItems);
-  const after = createComparisonColumn("Utána", afterItems);
-  container.replaceChildren(before, after);
+  const before = createProblemWebsiteMockup("before", visualCopy, beforeItems);
+  const transition = createProblemTransition(visualCopy);
+  const after = createProblemWebsiteMockup("after", visualCopy, afterItems);
+  container.classList.add("problem-visual-core");
+  container.replaceChildren(before, transition, after);
 };
 
-const createComparisonColumn = (title, items) => {
-  const column = createElement("div", "compare-column");
-  column.append(createElement("h3", "", title));
-
-  const list = createElement("ul", "plain-list");
-  items.forEach((item) => {
-    list.append(createElement("li", "", String(item)));
-  });
-
-  column.append(list);
-  return column;
+const createProblemTransition = (visualCopy = getProblemVisualCopy()) => {
+  const transition = createElement("div", "problem-transform-path");
+  transition.setAttribute("aria-hidden", "true");
+  transition.append(
+    createElement("span", "problem-path-line"),
+    createElement("span", "problem-path-node", "\u2192"),
+    createElement("span", "problem-path-label", visualCopy.transitionLabel)
+  );
+  return transition;
 };
 
+const createProblemWebsiteMockup = (variant, visualCopy, tags = []) => {
+  const isAfter = variant === "after";
+  const panel = createElement("article", "problem-browser problem-browser-" + variant);
+  const header = createElement("div", "problem-browser-header");
+  const dots = createElement("span", "problem-browser-dots");
+  dots.setAttribute("aria-hidden", "true");
+  header.append(dots, createElement("strong", "", isAfter ? visualCopy.afterLabel : visualCopy.beforeLabel));
+
+  const screen = createElement("div", "problem-browser-screen");
+  if (isAfter) {
+    screen.append(createAfterPublicPreview(visualCopy), createAfterAdminPreview(visualCopy), createAfterMobilePreview(visualCopy));
+  } else {
+    screen.append(createBeforePublicPreview(visualCopy), createBeforeMobilePreview(visualCopy));
+  }
+
+  const tagList = createElement("ul", "problem-state-tags");
+  getArray(tags).slice(0, 3).forEach((item) => tagList.append(createElement("li", "", String(item))));
+
+  panel.append(header, screen);
+  if (tagList.childElementCount) panel.append(tagList);
+  return panel;
+};
+
+const createBeforePublicPreview = (visualCopy) => {
+  const preview = createElement("div", "problem-old-site-preview");
+  preview.append(
+    createElement("span", "problem-mini-label", visualCopy.oldPageTitle),
+    createElement("span", "problem-old-headline"),
+    createElement("span", "problem-old-line wide"),
+    createElement("span", "problem-old-line"),
+    createElement("span", "problem-warning-label", visualCopy.oldNews),
+    createElement("span", "problem-warning-label muted", visualCopy.oldContact)
+  );
+  return preview;
+};
+
+const createBeforeMobilePreview = (visualCopy) => {
+  const mobile = createElement("div", "problem-old-mobile");
+  mobile.append(
+    createElement("span", "problem-mobile-notch"),
+    createElement("span", "problem-mobile-line"),
+    createElement("span", "problem-mobile-line short"),
+    createElement("strong", "", visualCopy.oldMobile)
+  );
+  return mobile;
+};
+
+const createAfterPublicPreview = (visualCopy) => {
+  const preview = createElement("div", "problem-new-site-preview");
+  preview.append(
+    createElement("span", "problem-mini-label", visualCopy.newPageTitle),
+    createElement("h3", "", visualCopy.newPageTitle),
+    createElement("span", "problem-new-line wide"),
+    createElement("span", "problem-new-line"),
+    createElement("span", "problem-status-chip", visualCopy.publicStatus)
+  );
+  return preview;
+};
+
+const createAfterAdminPreview = (visualCopy) => {
+  const admin = createElement("div", "problem-admin-preview");
+  admin.append(
+    createElement("span", "problem-mini-label", visualCopy.adminTitle),
+    createElement("strong", "", visualCopy.saved),
+    createElement("span", "problem-admin-row"),
+    createElement("span", "problem-admin-row short")
+  );
+  return admin;
+};
+
+const createAfterMobilePreview = (visualCopy) => {
+  const mobile = createElement("div", "problem-new-mobile");
+  mobile.append(
+    createElement("span", "problem-mobile-notch"),
+    createElement("span", "problem-mobile-line"),
+    createElement("span", "problem-mobile-card"),
+    createElement("strong", "", visualCopy.mobileTitle)
+  );
+  return mobile;
+};
 const renderServices = () => {
   const cards = services.slice(0, 3).map((service, index) => {
     const card = createElement("article", "card service-card");
@@ -149,12 +656,13 @@ const renderServices = () => {
 
 const createServiceModule = (index) => {
   const module = createElement("div", "service-module");
+  const label = fallback(ui.serviceModuleLabels?.[index], ["Dokumentumt?r", "Szerkeszthet?", "Workflow"][index] || "Workflow");
 
   if (index === 0) {
     module.append(
       createElement("span", "module-line wide"),
       createElement("span", "module-line"),
-      createElement("span", "module-pill", "Dokumentumtár")
+      createElement("span", "module-pill", label)
     );
     return module;
   }
@@ -163,7 +671,7 @@ const createServiceModule = (index) => {
     module.append(
       createElement("span", "module-block"),
       createElement("span", "module-block small"),
-      createElement("span", "module-pill", "Szerkeszthető")
+      createElement("span", "module-pill", label)
     );
     return module;
   }
@@ -171,7 +679,7 @@ const createServiceModule = (index) => {
   module.append(
     createElement("span", "module-step"),
     createElement("span", "module-step"),
-    createElement("span", "module-pill", "Workflow")
+    createElement("span", "module-pill", label)
   );
   return module;
 };
@@ -198,13 +706,13 @@ const createFeaturedProject = (project) => {
   const card = createElement("article", "project-featured");
   const content = createElement("div", "project-featured-content");
   const badgeRow = createElement("div", "project-badge-row");
-  const badge = createElement("span", "project-badge", "Kiemelt munka");
+  const badge = createElement("span", "project-badge", ui.featuredWork);
   const status = createElement("span", "project-status", getProjectStatusLabel(project.status));
   const category = createElement("p", "section-kicker", fallback(project.category, "Projekt"));
   const title = createElement("h3", "", fallback(project.title, "Kiemelt munka"));
   const description = createElement("p", "project-description", fallback(project.shortDescription, "Projektleírás később."));
   const tags = createList(project.tags, "chips project-tags");
-  const link = createProjectLink(project, "Projekt megnyitása");
+  const link = createProjectLink(project, ui.projectOpen);
 
   badgeRow.append(badge, status);
   content.append(badgeRow, category, title, description);
@@ -222,7 +730,7 @@ const createProjectCard = (project) => {
   const title = createElement("h3", "", fallback(project.title, "Projekt"));
   const description = createElement("p", "", fallback(project.shortDescription, "Projektleírás később."));
   const tags = createList(project.tags, "chips project-tags");
-  const link = createProjectLink(project, "Megnyitás");
+  const link = createProjectLink(project, ui.projectOpen);
 
   if (thumbnail) {
     card.classList.add("has-project-image");
@@ -236,16 +744,19 @@ const createProjectCard = (project) => {
 };
 
 const createProjectLink = (project, label) => {
+  const title = fallback(project?.title, "Projekt");
   const link = createElement("a", "button button-secondary project-link", label);
   link.href = getProjectCaseStudyHref(project);
+  link.dataset.linkType = "case-study";
+  link.setAttribute("aria-label", title + " " + ui.projectOpen.toLowerCase());
+  link.title = ui.projectOpen;
   return link;
 };
-
 const getProjectCaseStudyHref = (project) => {
   const explicitHref = fallback(project?.caseStudyHref, "");
-  if (explicitHref) return explicitHref;
+  if (explicitHref) return withLanguageParam(explicitHref, currentLanguage);
   const slug = fallback(project?.slug, "");
-  return slug ? "case-study.html?project=" + encodeURIComponent(slug) : "#munkak";
+  return slug ? withLanguageParam("case-study.html?project=" + encodeURIComponent(slug), currentLanguage) : "#munkak";
 };
 
 const getProjectLiveUrl = (project) => fallback(project?.liveUrl, fallback(project?.url, ""));
@@ -255,7 +766,9 @@ const createProjectLivePreviewLink = (project, className, label) => {
   const liveUrl = getProjectLiveUrl(project);
 
   link.href = liveUrl || getProjectCaseStudyHref(project);
-  link.setAttribute("aria-label", liveUrl ? label + " megnyitása új lapon" : label + " esettanulmány megnyitása");
+  link.dataset.linkType = liveUrl ? "external-preview" : "case-study-preview";
+  link.setAttribute("aria-label", liveUrl ? label + " - " + ui.liveSiteNewTab : label + " - " + ui.projectOpen);
+  link.title = liveUrl ? ui.liveSiteOpen : ui.projectOpen;
 
   if (liveUrl) {
     link.target = "_blank";
@@ -430,42 +943,40 @@ const getProjectImageSrc = (project, type) => {
 const normalizeProjectImagePath = (path) => {
   const value = fallback(path, "");
   if (!value) return "";
-  return value.includes("/") ? value : `CodeNest media web/${value}`;
+  return resolveRootAssetPath(value.includes("/") ? value : `CodeNest media web/${value}`);
 };
 
 const getProjectStatusLabel = (status) => {
   const value = fallback(status, "").toLowerCase();
-  if (value.includes("progress")) return "Hamarosan élesedő referencia";
-  if (value.includes("highlighted")) return "Kiemelt referencia";
-  if (value.includes("live")) return "Élő oldal";
-  return fallback(status, "Referencia");
+  if (value.includes("progress")) return ui.upcomingReference;
+  if (value.includes("highlighted")) return ui.featuredReference;
+  if (value.includes("published") || value.includes("live")) return ui.liveSite;
+  return fallback(status, ui.reference);
 };
-
 const createProjectMockup = () => {
   const mockup = createElement("div", "project-mockup");
   const portal = createElement("div", "project-mockup-panel portal-panel");
   const admin = createElement("div", "project-mockup-panel admin-panel");
   const statusHint = createElement("div", "project-status-hint");
+  const heroMockup = ui.heroMockup || getHeroMockupFallback();
+  const rows = getArray(ui.projectMockupRows);
+  const hints = rows.length ? rows : getHeroMockupFallback().rows;
 
   portal.append(
-    createElement("p", "mockup-label", "Publikus portál"),
-    createElement("h4", "", "Hírek és információk"),
+    createElement("p", "mockup-label", fallback(heroMockup.publicSite, getHeroMockupFallback().publicSite)),
+    createElement("h4", "", fallback(heroMockup.newsTitle, getHeroMockupFallback().newsTitle)),
     createElement("span", "project-line wide"),
     createElement("span", "project-line"),
     createElement("span", "project-line short")
   );
 
   admin.append(
-    createElement("p", "mockup-label", "Admin"),
-    createProjectMockupRow("Hír közzététele", "Közzétéve"),
-    createProjectMockupRow("Dokumentumtár", "Frissítve"),
-    createProjectMockupRow("Esemény", "Vázlat")
+    createElement("p", "mockup-label", fallback(heroMockup.adminArea, "Admin")),
+    ...hints.slice(0, 3).map((row) => createProjectMockupRow(row.label, row.status))
   );
 
   statusHint.append(
-    createElement("span", "", "szerkeszthető tartalom"),
-    createElement("span", "", "rendezett dokumentumok"),
-    createElement("span", "", "átlátható működés")
+    ...getArray(siteContent.whyCodeNest?.items).slice(0, 3).map((item) => createElement("span", "", fallback(item.title, "CodeNest")))
   );
 
   mockup.append(portal, admin, statusHint);
@@ -481,8 +992,8 @@ const createProjectMockupRow = (title, status) => {
 const createProjectsCta = () => {
   const cta = createElement("div", "projects-cta");
   cta.append(
-    createElement("p", "", "Hasonló rendszert szeretnél?"),
-    createElement("a", "button button-primary", "Beszéljünk a projektről")
+    createElement("p", "", ui.projectQuestion),
+    createElement("a", "button button-primary", ui.talkProject)
   );
 
   const link = cta.querySelector("a");
@@ -575,38 +1086,122 @@ const createWhyIcon = (index) => {
   return icon;
 };
 
+const founderPhotoAssets = {
+  shared: "Bors&David_3_laptopos.png",
+  portraits: {
+    Bors: "Bors_portrait.png",
+    "D\u00e1vid": "David_portrait.png",
+  },
+};
+
+const getFounderStoryCopy = () => {
+  const copy = {
+    hu: {
+      kicker: "Bors + D\u00e1vid",
+      title: "K\u00e9t fiatal a CodeNest m\u00f6g\u00f6tt",
+      story: "D\u00e1viddal bar\u00e1tok vagyunk, \u00e9s k\u00f6z\u00f6s projektekb\u0151l, versenyekb\u0151l n\u0151tt ki a CodeNest. A G\u00e1rdony.hu \u00fajratervez\u00e9se \u00f3ta m\u00e9g komolyabban \u00e9p\u00edtj\u00fck: haszn\u00e1lhat\u00f3, friss\u00edthet\u0151 weboldalakat szeretn\u00e9nk k\u00e9sz\u00edteni olyan v\u00e1llalkoz\u00e1soknak \u00e9s szervezeteknek, akik online is szeretn\u00e9k megmutatni azt az \u00e9rt\u00e9ket, amit a val\u00f3 \u00e9letben m\u00e1r fel\u00e9p\u00edtettek.",
+      photoAlt: "Bors \u00e9s D\u00e1vid laptop mellett dolgozik",
+      photoCaption: "K\u00f6z\u00f6s munka, r\u00f6vid kommunik\u00e1ci\u00f3s \u00fat, \u00e1tadhat\u00f3 webes alapok.",
+      trustNotes: ["K\u00f6zvetlen\u00fcl vel\u00fcnk besz\u00e9lsz", "Kevesebb k\u00f6r, gyorsabb d\u00f6nt\u00e9s", "A rendszert is \u00e1tadjuk, nem csak az oldalt"],
+      founders: {
+        Bors: "\u00c9n fogom \u00f6ssze a projektet: k\u00e9rdezek, egyeztetek, rendszerezem az \u00f6tleteket, \u00e9s figyelek arra, hogy az oldal ne csak sz\u00e9p legyen, hanem \u00e9rthet\u0151 \u00e9s haszn\u00e1lhat\u00f3 is.",
+        "D\u00e1vid": "D\u00e1vid az oldalak fel\u00fclet\u00e9n dolgozik. \u0150 \u00e9p\u00edti meg azt, amit k\u00f6z\u00f6sen kital\u00e1lunk: hogy a designb\u00f3l m\u0171k\u00f6d\u0151, gyors \u00e9s telefonon is k\u00e9nyelmes weboldal legyen.",
+      },
+    },
+    en: {
+      kicker: "Bors + D\u00e1vid",
+      title: "Two young people behind CodeNest",
+      story: "CodeNest grew out of shared projects, competitions and the way we learned to work together. Since taking on the G\u00e1rdony.hu redesign, we have been building it more seriously: clear, editable websites for businesses and organizations whose real-world value deserves a stronger online presence.",
+      photoAlt: "Bors and D\u00e1vid working together with a laptop",
+      photoCaption: "Shared work, direct communication and web foundations that can be handed over properly.",
+      trustNotes: ["You talk directly with us", "Fewer rounds, faster decisions", "We hand over the system, not only the page"],
+      founders: {
+        Bors: "I keep the project together: asking questions, organizing ideas and making sure the website is not only polished, but understandable and usable too.",
+        "D\u00e1vid": "D\u00e1vid works on the interface. He turns what we plan together into a working, fast and mobile-friendly website.",
+      },
+    },
+    de: {
+      kicker: "Bors + D\u00e1vid",
+      title: "Zwei junge Menschen hinter CodeNest",
+      story: "CodeNest ist aus gemeinsamen Projekten, Wettbewerben und unserer gemeinsamen Arbeitsweise gewachsen. Seit der Neugestaltung von G\u00e1rdony.hu bauen wir es noch ernster auf: klare, editierbare Websites f\u00fcr Unternehmen und Organisationen, deren Wert auch online sichtbar werden soll.",
+      photoAlt: "Bors und D\u00e1vid arbeiten gemeinsam am Laptop",
+      photoCaption: "Gemeinsame Arbeit, direkte Kommunikation und Web-Grundlagen, die sauber \u00fcbergeben werden k\u00f6nnen.",
+      trustNotes: ["Du sprichst direkt mit uns", "Weniger Runden, schnellere Entscheidungen", "Wir \u00fcbergeben das System, nicht nur die Seite"],
+      founders: {
+        Bors: "Ich halte das Projekt zusammen: Ich frage nach, ordne Ideen und achte darauf, dass die Website nicht nur gut aussieht, sondern verst\u00e4ndlich und nutzbar bleibt.",
+        "D\u00e1vid": "D\u00e1vid arbeitet an der Oberfl\u00e4che. Er macht aus dem gemeinsamen Plan eine funktionierende, schnelle und mobilfreundliche Website.",
+      },
+    },
+  };
+  return copy[currentLanguage] || copy.hu;
+};
+
+const createFounderImage = (src, className, alt, fallbackText = "") => {
+  const image = createElement("img", className);
+  image.src = resolveRootAssetPath(src);
+  image.alt = alt;
+  image.loading = "lazy";
+  image.decoding = "async";
+  image.onerror = () => {
+    const fallbackAvatar = createElement("span", className + " founder-image-fallback", fallbackText);
+    image.replaceWith(fallbackAvatar);
+  };
+  return image;
+};
+
+const placeFounderSection = () => {
+  const teamSection = document.getElementById("bors-david");
+  const projectsSection = document.getElementById("munkak");
+  const processSection = document.getElementById("folyamat");
+  if (!teamSection || !projectsSection || !processSection) return;
+  if (projectsSection.nextElementSibling !== teamSection) {
+    projectsSection.after(teamSection);
+  }
+};
+
 const renderTeam = () => {
-  setText('[data-render="team-title"]', teamIntro.title, "Bors + Dávid");
-  setText('[data-render="team-intro"]', teamIntro.text, "Kétfős CodeNest bemutatkozás.");
+  const shell = document.querySelector("#bors-david .team-shell");
+  const story = getFounderStoryCopy();
 
-  const fallbackTrustNotes = [
-    "Rövid kommunikációs út",
-    "Gyorsabb döntések",
-    "Kevesebb félreértés",
-    "Személyesebb együttműködés",
-  ];
-  const trustNotesData = getArray(teamIntro.trustNotes);
-  const trustNotes = (trustNotesData.length ? trustNotesData : fallbackTrustNotes).map((note) =>
-    createElement("span", "", note)
-  );
-  if (trustNotes.length) clearAndAppend('[data-render="team-notes"]', trustNotes);
+  if (!shell) return;
 
-  const cards = team.map((member) => {
-    const name = fallback(member.name, "Csapattag");
-    const card = createElement("article", "team-card");
-    const avatar = createElement("span", "team-avatar", getInitial(name));
-    const content = createElement("div", "team-card-content");
+  const copy = createElement("div", "team-copy founder-story-copy");
+  const kicker = createElement("p", "section-kicker", story.kicker);
+  const title = createElement("h2", "", story.title);
+  const intro = createElement("p", "founder-story-text", story.story);
+  const trustList = createElement("div", "team-trust-list founder-trust-list");
+  trustList.setAttribute("aria-label", story.kicker);
 
-    content.append(
-      createElement("h3", "", name),
-      createElement("p", "team-role", fallback(member.role, "Szerepkör")),
-      createElement("p", "", fallback(member.shortText, "Bemutatkozás később."))
-    );
-    card.append(avatar, content);
-    return card;
+  getArray(story.trustNotes).forEach((note) => {
+    trustList.append(createElement("span", "", note));
   });
 
-  if (cards.length) clearAndAppend('[data-render="team"]', cards);
+  copy.append(kicker, title, intro, trustList);
+
+  const photo = createElement("figure", "founder-shared-photo");
+  const sharedImage = createFounderImage(founderPhotoAssets.shared, "founder-shared-image", story.photoAlt, "B+D");
+  const caption = createElement("figcaption", "", story.photoCaption);
+  photo.append(sharedImage, caption);
+
+  const cards = createElement("div", "team-cards founder-cards");
+  team.forEach((member) => {
+    const name = fallback(member.name, "Csapattag");
+    const card = createElement("article", "team-card founder-card");
+    const portraitWrap = createElement("div", "founder-portrait-wrap");
+    const portrait = createFounderImage(founderPhotoAssets.portraits[name], "founder-portrait", name, getInitial(name));
+    const content = createElement("div", "team-card-content founder-card-content");
+
+    portraitWrap.append(portrait);
+    content.append(
+      createElement("h3", "", name),
+      createElement("p", "team-role", fallback(member.role, "CodeNest")),
+      createElement("p", "", fallback(story.founders?.[name], fallback(member.shortText, "")))
+    );
+    card.append(portraitWrap, content);
+    cards.append(card);
+  });
+
+  shell.replaceChildren(copy, photo, cards);
 };
 
 const getInitial = (name) => Array.from(fallback(name, "C").trim())[0]?.toUpperCase() || "C";
@@ -654,56 +1249,172 @@ const createScopeChecklist = (items) => {
   return list;
 };
 
+const getContactUxCopy = () => {
+  const copy = {
+    hu: {
+      title: "\u00cdrd le, hol tartotok most.",
+      intro: "Nem kell pontos briefel \u00e9rkezni. El\u00e9g, ha le\u00edrod, milyen oldalad van most, mi zavar benne, vagy milyen \u00faj webes megold\u00e1sban gondolkodsz. Seg\u00edt\u00fcnk tiszt\u00e1zni, mi lenne a re\u00e1lis k\u00f6vetkez\u0151 l\u00e9p\u00e9s.",
+      eyebrow: "Besz\u00e9lget\u00e9sind\u00edt\u00f3",
+      cardTitle: "El\u00e9g p\u00e1r mondat.",
+      cardText: "Nem egy k\u00e9sz specifik\u00e1ci\u00f3t v\u00e1runk. Azt mondd el, mi van most, min akadtok el, \u00e9s mit szeretn\u00e9tek egyszer\u0171bben kezelni online.",
+      ctaLabel: "\u00cdrok p\u00e1r sort",
+      emailLabel: "K\u00f6zvetlen e-mail",
+      note: "Ha m\u00e9g nem tudod pontosan, mire van sz\u00fcks\u00e9g, az is teljesen rendben van.",
+      trustNotes: ["Nem kell k\u00e9sz brief", "K\u00f6zvetlen\u00fcl vel\u00fcnk besz\u00e9lsz", "Seg\u00edt\u00fcnk sorrendet rakni"],
+      starterTitle: "Mit \u00e9rdemes le\u00edrni?",
+      starterIntro: "Ezek csak kapaszkod\u00f3k. Nem baj, ha valamelyikre m\u00e9g nincs v\u00e1lasz.",
+      prompts: ["milyen oldal vagy rendszer van most", "mi zavar benne vagy mi lass\u00edt", "mit kellene k\u00f6nnyebben friss\u00edteni", "kik fogj\u00e1k haszn\u00e1lni", "mikor lenne j\u00f3 elindulni"],
+      topicTitle: "Miben gondolkodsz?",
+      topics: ["\u00daj bemutatkoz\u00f3 weboldal", "R\u00e9gi oldal \u00fajragondol\u00e1sa", "Szerkeszthet\u0151 / adminos oldal", "\u00d6nkorm\u00e1nyzati vagy int\u00e9zm\u00e9nyi fel\u00fclet", "Egyedi webes eszk\u00f6z", "M\u00e9g nem tudom pontosan"],
+      nextTitle: "Mi t\u00f6rt\u00e9nik ut\u00e1na?",
+      nextSteps: ["Vissza\u00edrunk, ha valamit pontos\u00edtani kell.", "Megn\u00e9zz\u00fck, mi lenne re\u00e1lis els\u0151 l\u00e9p\u00e9s.", "Ha passzol, kapsz egy \u00e9rthet\u0151 javaslatot."],
+      subject: "CodeNest projekt \u00e1tbesz\u00e9l\u00e9s",
+      mailBody: "Szia CodeNest!\n\nRövid leírás:\n\n- jelenlegi oldal / helyzet:\n- mi zavar vagy mit lenne jó egyszerűsíteni:\n- milyen következő lépés lenne ideális:\n\nKöszönöm!",
+      privacyIntro: "Az \u00fczenet elk\u00fcld\u00e9s\u00e9vel tudom\u00e1sul veszem az ",
+      privacyLinkLabel: "Adatkezel\u00e9si t\u00e1j\u00e9koztat\u00f3ban",
+      privacyEnd: " foglaltakat.",
+    },
+    en: {
+      title: "Tell us where things stand now.",
+      intro: "You do not need a finished brief. A few sentences about your current website, what feels hard, or what kind of web solution you are thinking about are enough. We help clarify the realistic next step.",
+      eyebrow: "Conversation starter",
+      cardTitle: "A few sentences are enough.",
+      cardText: "We are not waiting for a finished specification. Tell us what exists now, where things get stuck, and what should be easier to manage online.",
+      ctaLabel: "Send a short note",
+      emailLabel: "Direct email",
+      note: "It is completely fine if you do not yet know exactly what you need.",
+      trustNotes: ["No finished brief needed", "You talk directly with us", "We help set the order"],
+      starterTitle: "What is useful to write?",
+      starterIntro: "These are only prompts. It is fine if you do not have every answer yet.",
+      prompts: ["what website or system exists now", "what feels annoying or slow", "what should be easier to update", "who will use it", "when launch would make sense"],
+      topicTitle: "What are you thinking about?",
+      topics: ["New introduction website", "Redesigning an old website", "Editable / admin-powered website", "Municipal or institutional portal", "Custom web tool", "I am not sure yet"],
+      nextTitle: "What happens next?",
+      nextSteps: ["We reply if something needs clarifying.", "We look at a realistic first step.", "If it fits, you get a clear suggestion."],
+      subject: "CodeNest project conversation",
+      mailBody: "Hi CodeNest,\n\nIn short, this is what we would like to discuss:\n\n- current website / situation:\n- what feels difficult or should be simpler:\n- ideal next step:\n\nThank you!",
+      privacyIntro: "By sending a message, I acknowledge the ",
+      privacyLinkLabel: "Privacy Notice",
+      privacyEnd: ".",
+    },
+    de: {
+      title: "Schreib kurz, wo ihr gerade steht.",
+      intro: "Du brauchst kein fertiges Briefing. Ein paar S\u00e4tze zu eurer aktuellen Website, was daran st\u00f6rt oder an welche neue Web-L\u00f6sung ihr denkt, reichen. Wir helfen, den realistischen n\u00e4chsten Schritt zu kl\u00e4ren.",
+      eyebrow: "Gespr\u00e4ch starten",
+      cardTitle: "Ein paar S\u00e4tze reichen.",
+      cardText: "Wir warten nicht auf eine fertige Spezifikation. Schreib, was es heute gibt, wo ihr h\u00e4ngen bleibt und was online einfacher zu pflegen sein sollte.",
+      ctaLabel: "Kurze Nachricht senden",
+      emailLabel: "Direkte E-Mail",
+      note: "Es ist v\u00f6llig in Ordnung, wenn du noch nicht genau wei\u00dft, was gebraucht wird.",
+      trustNotes: ["Kein fertiges Briefing n\u00f6tig", "Du sprichst direkt mit uns", "Wir helfen beim Sortieren"],
+      starterTitle: "Was solltest du schreiben?",
+      starterIntro: "Das sind nur Orientierungspunkte. Es ist in Ordnung, wenn noch nicht alles klar ist.",
+      prompts: ["welche Website oder welches System es heute gibt", "was st\u00f6rt oder verlangsamt", "was leichter aktualisiert werden sollte", "wer es nutzen wird", "wann ein Start sinnvoll w\u00e4re"],
+      topicTitle: "Woran denkst du?",
+      topics: ["Neue Vorstellungswebsite", "Alte Website neu denken", "Editierbare / adminbasierte Website", "Kommunales oder institutionelles Portal", "Individuelles Web-Tool", "Ich wei\u00df es noch nicht genau"],
+      nextTitle: "Was passiert danach?",
+      nextSteps: ["Wir melden uns, wenn etwas zu kl\u00e4ren ist.", "Wir schauen, was ein realistischer erster Schritt w\u00e4re.", "Wenn es passt, bekommst du einen klaren Vorschlag."],
+      subject: "CodeNest Projektgespr\u00e4ch",
+      mailBody: "Hallo CodeNest,\n\nKurz gesagt geht es um:\n\n- aktuelle Website / Situation:\n- was schwierig ist oder einfacher werden sollte:\n- sinnvoller nächster Schritt:\n\nVielen Dank!",
+      privacyIntro: "Mit dem Senden der Nachricht nehme ich die ",
+      privacyLinkLabel: "Datenschutzhinweise",
+      privacyEnd: " zur Kenntnis.",
+    },
+  };
+  return copy[currentLanguage] || copy.hu;
+};
+
 const renderContact = () => {
   const contact = siteContent.contact || {};
+  const contactCopy = getContactUxCopy();
   const details = document.querySelector('[data-render="contact-details"]');
   if (!details) return;
 
-  setText('[data-render="contact-title"]', contact.title, "Kapcsolat");
-  setText('[data-render="contact-text"]', contact.text, "Kapcsolati szöveg később.");
+  setText('[data-render="contact-title"]', contactCopy.title, "Kapcsolat");
+  setText('[data-render="contact-text"]', contactCopy.intro, fallback(contact.text, ""));
 
-  const labels = contact.formLabels || {};
-  const side = createElement("div", "contact-side");
-  const email = createElement(
-    "a",
-    "contact-email-card",
-    `${fallback(contact.emailLabel, "E-mail")}: ${fallback(contact.email, "info@codenest.hu")}`
-  );
+  const emailAddress = fallback(contact.email, "info.codenest.hu@gmail.com");
+  const ctaLabel = contactCopy.ctaLabel;
+  const emailLabel = contactCopy.emailLabel;
+  const mailSubject = encodeURIComponent(contactCopy.subject);
+  const mailBody = contactCopy.mailBody ? encodeURIComponent(contactCopy.mailBody) : "";
+
+  const side = createElement("div", "contact-side contact-conversation-card");
+  const eyebrow = createElement("p", "contact-eyebrow", contactCopy.eyebrow);
+  const title = createElement("h3", "contact-conversation-title", contactCopy.cardTitle);
+  const copy = createElement("p", "contact-conversation-copy", contactCopy.cardText);
+  const actionRow = createElement("div", "contact-action-row");
+  const cta = createElement("a", "button button-primary contact-primary-cta", ctaLabel);
+  const email = createElement("a", "contact-email-card", "");
+  const emailText = createElement("span", "contact-email-label", emailLabel);
+  const emailValue = createElement("strong", "", emailAddress);
+  const note = createElement("p", "contact-brief-note", contactCopy.note);
   const trustList = createElement("ul", "contact-trust-list");
-  ["Nem kell kész specifikáció", "Közvetlenül velünk beszélsz", "1-2 munkanapon belül válaszolunk"].forEach((note) => {
-    trustList.append(createElement("li", "", note));
+
+  cta.href = "mailto:" + emailAddress + "?subject=" + mailSubject + (mailBody ? "&body=" + mailBody : "");
+  cta.dataset.linkType = "email";
+  cta.setAttribute("aria-label", ctaLabel);
+
+  email.href = "mailto:" + emailAddress;
+  email.dataset.linkType = "email";
+  email.setAttribute("aria-label", emailLabel + ": " + emailAddress);
+  email.append(emailText, emailValue);
+
+  actionRow.append(cta, email);
+
+  const legalNotice = createElement("p", "contact-legal-notice", "");
+  const legalNoticeIntro = document.createTextNode(contactCopy.privacyIntro);
+  const legalNoticeLink = createElement("a", "", contactCopy.privacyLinkLabel);
+  const legalNoticeEnd = document.createTextNode(contactCopy.privacyEnd);
+  legalNoticeLink.href = "legal-hu.html#adatkezeles";
+  legalNotice.append(legalNoticeIntro, legalNoticeLink, legalNoticeEnd);
+
+  getArray(contactCopy.trustNotes).forEach((item) => {
+    trustList.append(createElement("li", "", item));
   });
 
-  email.href = `mailto:${fallback(contact.email, "info@codenest.hu")}`;
-  side.append(email, trustList);
+  side.append(eyebrow, title, copy, actionRow, legalNotice, note);
+  if (trustList.childElementCount) side.append(trustList);
 
-  const formPreview = createElement("div", "contact-form-preview");
-  const title = createElement("h3", "", fallback(labels.projectType, "Projekt típusa"));
-  const options = createList(contact.projectTypes, "plain-list contact-option-list");
-  const fieldGrid = createElement("div", "contact-field-grid");
-  [
-    fallback(labels.name, "Név"),
-    fallback(labels.email, "E-mail"),
-    "Cég / intézmény",
-    fallback(labels.message, "Üzenet"),
-  ].forEach((label, index) => {
-    const field = createElement("span", index === 3 ? "contact-field is-message" : "contact-field", label);
-    fieldGrid.append(field);
+  const helper = createElement("div", "contact-helper-card");
+  const helperHeader = createElement("div", "contact-helper-header");
+  helperHeader.append(
+    createElement("h3", "", contactCopy.starterTitle),
+    createElement("p", "contact-helper-note", contactCopy.starterIntro)
+  );
+
+  const prompts = createElement("ul", "contact-starter-list");
+  getArray(contactCopy.prompts).forEach((prompt) => {
+    prompts.append(createElement("li", "", prompt));
   });
-  const cta = createElement("a", "button button-primary", fallback(labels.submit, "Beszéljünk a projektről"));
-  cta.href = `mailto:${fallback(contact.email, "info@codenest.hu")}`;
 
-  formPreview.append(title);
-  if (options) formPreview.append(options);
-  formPreview.append(fieldGrid, cta);
-  details.replaceChildren(side, formPreview);
+  const topics = createElement("div", "contact-topic-block");
+  const topicTitle = createElement("p", "contact-mini-title", contactCopy.topicTitle);
+  const topicList = createList(contactCopy.topics, "plain-list contact-option-list contact-topic-list");
+  topics.append(topicTitle);
+  if (topicList) topics.append(topicList);
+
+  const next = createElement("div", "contact-next-card");
+  const nextTitle = createElement("h4", "", contactCopy.nextTitle);
+  const nextList = createElement("ul", "contact-next-list");
+  getArray(contactCopy.nextSteps).forEach((step) => {
+    nextList.append(createElement("li", "", step));
+  });
+  next.append(nextTitle);
+  if (nextList.childElementCount) next.append(nextList);
+
+  helper.append(helperHeader);
+  if (prompts.childElementCount) helper.append(prompts);
+  helper.append(topics, next);
+
+  details.replaceChildren(side, helper);
 };
-
 const renderFooter = () => {
   const footer = siteContent.footer || {};
   const container = document.querySelector('[data-render="footer"]');
+  const footerCopy = getFooterCopy();
   if (!container) {
-    setText('[data-render="footer-tagline"]', footer.tagline, "CodeNest V2");
+    setText('[data-render="footer-tagline"]', footerCopy.statement, "CodeNest");
     return;
   }
 
@@ -711,35 +1422,62 @@ const renderFooter = () => {
   const brand = createElement("a", "footer-brand");
   const brandMark = createElement("img", "footer-brand-mark");
   const brandText = createElement("span", "", fallback(footer.brandName, "CodeNest"));
-  const tagline = createElement("p", "footer-tagline", fallback(footer.tagline, "CodeNest V2"));
-  const copyright = createElement("p", "footer-copyright", fallback(footer.copyright, ""));
+  const statement = createElement("p", "footer-tagline footer-statement", footerCopy.statement);
+  const note = createElement("p", "footer-note", footerCopy.note);
+  const copyrightText = fallback(footer.copyright, "\u00a9 2026 CodeNest");
 
-  brandMark.src = "logo_footer-modified.png";
+  brandMark.src = resolveRootAssetPath("logo_footer-modified.png");
   brandMark.alt = "";
   brandMark.setAttribute("aria-hidden", "true");
   brandMark.loading = "eager";
   brand.append(brandMark, brandText);
   brand.href = "#hero";
-  brandArea.append(brand, tagline);
-  if (copyright.textContent) brandArea.append(copyright);
+  brandArea.append(brand, statement, note);
+
+  const footerPanel = createElement("div", "footer-panel");
+  const motif = createElement("span", "footer-motif");
+  motif.setAttribute("aria-hidden", "true");
 
   const groups = createElement("div", "footer-groups");
-  const navGroup = createFooterLinkGroup("Oldalak", footer.links);
-  const legalGroup = createFooterLinkGroup("Jogi", footer.legalLinks);
-  const contactGroup = createElement("div", "footer-group");
-  const contactTitle = createElement("h3", "", "Kapcsolat");
+  const navGroup = createFooterLinkGroup(footerCopy.pagesTitle, getFooterNavigationLinks());
+  const contactGroup = createElement("div", "footer-group footer-contact-group");
+  const contactTitle = createElement("h3", "", footerCopy.contactTitle);
   const contactEmail = createElement("a", "", fallback(siteContent.contact?.email, ""));
+  const siteLink = createElement("a", "", footerCopy.siteLabel);
+
+  siteLink.href = "https://codenest.hu/";
+  siteLink.target = "_blank";
+  siteLink.rel = "noopener noreferrer";
 
   if (contactEmail.textContent) {
-    contactEmail.href = `mailto:${contactEmail.textContent}`;
-    contactGroup.append(contactTitle, contactEmail);
+    contactEmail.href = "mailto:" + contactEmail.textContent;
+    contactGroup.append(contactTitle, contactEmail, siteLink);
+  } else {
+    contactGroup.append(contactTitle, siteLink);
   }
 
   if (navGroup) groups.append(navGroup);
-  if (legalGroup) groups.append(legalGroup);
-  if (contactEmail.textContent) groups.append(contactGroup);
+  groups.append(contactGroup);
+  footerPanel.append(motif, groups);
 
-  container.replaceChildren(brandArea, groups);
+  const legalRow = createFooterLegalRow(copyrightText, footerCopy.legalLinks);
+  container.replaceChildren(brandArea, footerPanel, legalRow);
+};
+
+const createFooterLegalRow = (copyrightText, links) => {
+  const row = createElement("div", "footer-legal-row");
+  const copyright = createElement("span", "footer-legal-copyright", fallback(copyrightText, "© 2026 CodeNest"));
+  row.append(copyright);
+
+  getArray(links).forEach((item) => {
+    const separator = createElement("span", "footer-legal-separator", "·");
+    const link = createElement("a", "", fallback(item.label, "Link"));
+    separator.setAttribute("aria-hidden", "true");
+    link.href = fallback(item.href, "/legal-hu.html");
+    row.append(separator, link);
+  });
+
+  return row;
 };
 
 const createFooterLinkGroup = (title, links) => {
@@ -772,13 +1510,245 @@ const createList = (items, className) => {
   return list;
 };
 
-renderNavigation();
-renderHero();
-renderProblem();
-renderServices();
-renderProjects();
-renderProcessAndWhy();
-renderTeam();
-renderScope();
-renderContact();
-renderFooter();
+const initSectionNavigation = () => {
+  if (sectionNavigationCleanup) sectionNavigationCleanup();
+
+  const links = Array.from(document.querySelectorAll('.site-nav a[href^="#"], .mobile-menu-nav a[href^="#"]'));
+  const sectionLinks = links
+    .map((link) => {
+      const id = link.getAttribute("href")?.slice(1);
+      const section = id ? document.getElementById(id) : null;
+      return section ? { link, section, id } : null;
+    })
+    .filter(Boolean);
+
+  if (!sectionLinks.length) return;
+
+  const header = document.querySelector(".site-header");
+  let currentActiveId = "";
+  let ticking = false;
+  const clickHandlers = [];
+
+  const setActiveLink = (activeId) => {
+    if (!activeId || activeId === currentActiveId) return;
+    currentActiveId = activeId;
+
+    sectionLinks.forEach(({ link, id }) => {
+      const isActive = id === activeId;
+      link.classList.toggle("is-active", isActive);
+      if (isActive) link.setAttribute("aria-current", "location");
+      else link.removeAttribute("aria-current");
+    });
+  };
+
+  const getSectionTop = (section) => section.getBoundingClientRect().top + window.scrollY;
+
+  const getActiveSectionId = () => {
+    const headerOffset = header?.offsetHeight || 0;
+    const referenceY = window.scrollY + headerOffset + window.innerHeight * 0.24;
+    const isNearPageEnd = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 8;
+    let activeId = sectionLinks[0].id;
+    if (isNearPageEnd) return sectionLinks[sectionLinks.length - 1].id;
+    sectionLinks.forEach(({ section, id }) => {
+      if (getSectionTop(section) <= referenceY) activeId = id;
+    });
+    return activeId;
+  };
+
+  const updateActiveLink = () => {
+    ticking = false;
+    setActiveLink(getActiveSectionId());
+  };
+
+  const requestUpdate = () => {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(updateActiveLink);
+  };
+
+  const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const scrollToSection = (section) => {
+    const headerOffset = header?.offsetHeight || 0;
+    const targetY = Math.max(0, getSectionTop(section) - headerOffset - 14);
+    window.scrollTo({
+      top: targetY,
+      behavior: prefersReducedMotion() ? "auto" : "smooth",
+    });
+  };
+
+  const pushSectionHash = (id) => {
+    if (!window.history?.pushState) return;
+    const url = new URL(window.location.href);
+    url.searchParams.set("lang", currentLanguage);
+    url.hash = id;
+    window.history.pushState(null, "", `${url.pathname}${url.search}${url.hash}`);
+  };
+
+  sectionLinks.forEach(({ link, section, id }) => {
+    const handler = (event) => {
+      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+      event.preventDefault();
+      setActiveLink(id);
+      closeMobileMenu();
+      scrollToSection(section);
+      pushSectionHash(id);
+      window.setTimeout(requestUpdate, 160);
+    };
+    link.addEventListener("click", handler);
+    clickHandlers.push({ link, handler });
+  });
+
+  window.addEventListener("scroll", requestUpdate, { passive: true });
+  window.addEventListener("resize", requestUpdate);
+  window.addEventListener("hashchange", requestUpdate);
+  setActiveLink(getActiveSectionId());
+
+  sectionNavigationCleanup = () => {
+    clickHandlers.forEach(({ link, handler }) => link.removeEventListener("click", handler));
+    window.removeEventListener("scroll", requestUpdate);
+    window.removeEventListener("resize", requestUpdate);
+    window.removeEventListener("hashchange", requestUpdate);
+    sectionNavigationCleanup = null;
+  };
+};
+
+const getMobileMenuElements = () => ({
+  button: document.querySelector(".menu-toggle"),
+  menu: document.getElementById("mobile-menu"),
+  header: document.querySelector(".site-header"),
+});
+
+const setMobileMenuState = (open) => {
+  const { button, menu } = getMobileMenuElements();
+  if (!button || !menu) return;
+  button.setAttribute("aria-expanded", String(open));
+  button.setAttribute("aria-label", open ? ui.closeMenu : ui.openMenu);
+  menu.hidden = !open;
+  menu.classList.toggle("is-open", open);
+};
+
+const closeMobileMenu = () => setMobileMenuState(false);
+const toggleMobileMenu = () => {
+  const { button } = getMobileMenuElements();
+  setMobileMenuState(button?.getAttribute("aria-expanded") !== "true");
+};
+
+const initMobileMenu = () => {
+  const { button, header } = getMobileMenuElements();
+  if (!button || !header) return;
+
+  button.addEventListener("click", (event) => {
+    event.stopPropagation();
+    toggleMobileMenu();
+  });
+
+  document.addEventListener("click", (event) => {
+    if (button.getAttribute("aria-expanded") !== "true") return;
+    if (!header.contains(event.target)) closeMobileMenu();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeMobileMenu();
+  });
+
+  window.addEventListener("resize", () => {
+    if (window.matchMedia("(min-width: 821px)").matches) closeMobileMenu();
+  });
+};
+
+const setLanguage = (language) => {
+  const nextLanguage = normalizeLanguage(language) || "hu";
+  currentLanguage = nextLanguage;
+  storeLanguage(currentLanguage);
+  updateUrlLanguage(currentLanguage);
+  setDocumentLanguage(currentLanguage);
+  refreshLocalizedData();
+  renderPage();
+  closeLanguageDropdowns();
+  closeMobileMenu();
+};
+
+const initLanguageControls = () => {
+  document.addEventListener("click", (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    const trigger = target?.closest("[data-language-trigger]");
+    if (trigger) {
+      event.stopPropagation();
+      toggleLanguageDropdown(trigger);
+      return;
+    }
+
+    const button = target?.closest("[data-language]");
+    if (button) {
+      setLanguage(button.dataset.language);
+      return;
+    }
+
+    if (!target?.closest(".language-switcher")) closeLanguageDropdowns();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeLanguageDropdowns();
+  });
+};
+
+const getSectionLabels = () => {
+  const nav = siteContent.navigation?.items || [];
+  return {
+    problem: currentLanguage === "hu" ? "Probléma" : "Problem",
+    services: fallback(nav[0]?.label, currentLanguage === "de" ? "Was wir bauen" : currentLanguage === "en" ? "What we build" : "Mit építünk"),
+    projects: currentLanguage === "de" ? "Ausgewählte Arbeiten" : currentLanguage === "en" ? "Featured work" : "Kiemelt munkák",
+    process: fallback(nav[2]?.label, currentLanguage === "de" ? "Prozess" : currentLanguage === "en" ? "Process" : "Folyamat"),
+    why: currentLanguage === "de" ? "Warum CodeNest" : currentLanguage === "en" ? "Why CodeNest" : "Miért CodeNest",
+    team: "Bors + Dávid",
+    scope: currentLanguage === "de" ? "Scope / Preisfindung" : currentLanguage === "en" ? "Scope / pricing" : "Scope / árazás",
+    contact: fallback(nav[4]?.label, currentLanguage === "de" ? "Kontakt" : currentLanguage === "en" ? "Contact" : "Kapcsolat"),
+  };
+};
+
+const renderStaticSectionLabels = () => {
+  const labels = getSectionLabels();
+  setText('#problema .section-kicker', labels.problem, labels.problem);
+  setText('#mit-epitunk .section-kicker', labels.services, labels.services);
+  setText('#mit-epitunk h2', labels.services, labels.services);
+  setText('#munkak .section-kicker', labels.projects, labels.projects);
+  setText('#munkak h2', labels.projects, labels.projects);
+  setText('#folyamat .section-kicker', labels.process, labels.process);
+  setText('#miert-codenest .section-kicker', labels.why, labels.why);
+  setText('#bors-david .section-kicker', labels.team, labels.team);
+  setText('#scope-arazas .section-kicker', labels.scope, labels.scope);
+  setText('#kapcsolat .section-kicker', labels.contact, labels.contact);
+};
+const renderPage = () => {
+  placeFounderSection();
+  renderSeoMeta();
+  renderNavigation();
+  renderLanguageSwitchers();
+  renderStaticSectionLabels();
+  renderHero();
+  renderProblem();
+  renderServices();
+  renderProjects();
+  renderProcessAndWhy();
+  renderTeam();
+  renderScope();
+  renderContact();
+  renderFooter();
+  initSectionNavigation();
+};
+
+setDocumentLanguage(currentLanguage);
+storeLanguage(currentLanguage);
+updateUrlLanguage(currentLanguage);
+renderPage();
+initMobileMenu();
+initLanguageControls();
+
+
+
+
+
+
+
+
+

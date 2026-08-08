@@ -1,50 +1,44 @@
 export const services = [
   {
-    title: "Önkormányzati és intézményi portálok",
+    title: "Önkormányzatok és intézmények",
     slug: "onkormanyzati-es-intezmenyi-portalok",
-    shortDescription:
-      "Átlátható, szerkeszthető portálok hírekhez, dokumentumokhoz, eseményekhez és lakossági információkhoz.",
-    supportingText:
-      "Olyan portálokat építünk, ahol a publikus felület és az adminlogika együtt működik. A cél nem csak egy szép kezdőlap, hanem egy rendszer, amit az intézmény munkatársai hosszú távon is tudnak kezelni.",
+    shortDescription: "Átlátható, szerkeszthető oldalak hírekhez, dokumentumokhoz, eseményekhez és gyakran keresett információkhoz.",
+    supportingText: "Kisebb településeknek és intézményeknek olyan weboldalt készítünk, ahol a lakosok vagy érdeklődők gyorsan megtalálják a fontos információkat, a munkatársak pedig később is tudják frissíteni a tartalmat.",
     features: [
-      "Hírek, események és közlemények kezelése",
-      "Dokumentumtár és letölthető anyagok",
-      "Szerkeszthető oldalak és menüstruktúra",
-      "Űrlapok, bejelentések és alap munkafolyamatok",
+      "Hírek, események és közlemények",
+      "Dokumentumok és letölthető anyagok",
+      "Elérhetőségek, nyitvatartás, ügyintézési információk",
+      "Szerkeszthető felület a gyakran változó tartalmakhoz",
     ],
-    chips: ["portál", "admin", "dokumentumtár", "űrlapok"],
-    ctaLabel: "Beszéljünk a projektről",
+    chips: ["hírek", "dokumentumok", "ügyintézés", "frissíthető oldal"],
+    ctaLabel: "20 perces ingyenes átbeszélés",
   },
   {
-    title: "Adminos üzleti weboldalak",
+    title: "Helyi vállalkozások és szakemberek",
     slug: "adminos-uzleti-weboldalak",
-    shortDescription:
-      "Üzleti weboldalak, ahol a tartalom, ajánlatok, referenciák és űrlapok kezelése nem fejlesztői feladat.",
-    supportingText:
-      "Kisvállalkozásoknak és szolgáltatóknak készítünk olyan weboldalakat, amelyek mögött egyszerűen használható adminfelület áll. Így a weboldal nem statikus kirakat, hanem naprakészen tartható üzleti eszköz.",
+    shortDescription: "Bemutatkozó és szolgáltatói weboldalak, ahol a látogató gyorsan megérti, mivel foglalkozol és hogyan tud továbblépni.",
+    supportingText: "Olyan oldalt építünk, ami nem túlbeszéli a vállalkozást, hanem érthetően megmutatja a szolgáltatásokat, képeket, referenciákat, ajánlatkérési irányt és kapcsolatfelvételi pontokat.",
     features: [
-      "Szerkeszthető szolgáltatások és aloldalak",
-      "Referenciák, képek és tartalmi blokkok kezelése",
-      "Kapcsolati és ajánlatkérő űrlapok",
-      "Hosting, mentés és karbantartási támogatás",
+      "Szolgáltatások és bemutatkozás rendezése",
+      "Képek, referenciák és gyakori kérdések",
+      "Kapcsolatfelvétel vagy ajánlatkérés egyszerűen",
+      "Később frissíthető szövegek és képek",
     ],
-    chips: ["üzleti weboldal", "admin", "ajánlatkérés", "támogatás"],
-    ctaLabel: "Beszéljünk a projektről",
+    chips: ["bemutatkozó oldal", "szolgáltatások", "kapcsolat", "mobilbarát"],
+    ctaLabel: "20 perces ingyenes átbeszélés",
   },
   {
-    title: "Egyedi webes eszközök",
+    title: "Szálláshelyek és turisztikai oldalak",
     slug: "egyedi-webes-eszkozok",
-    shortDescription:
-      "Kisebb belső rendszerek, kalkulátorok, adatkezelők és workflow-eszközök konkrét működési problémákra.",
-    supportingText:
-      "Ha a feladat túl egyedi egy kész sablonhoz, de nem kell teljes vállalati rendszer, célzott webes eszközt építünk hozzá. A hangsúly a használhatóságon, az adatstruktúrán és a napi munkába illeszkedő működésen van.",
+    shortDescription: "Képekben erős, könnyen használható oldalak vendégeknek, programoknak, szálláshelyeknek és helyi látnivalóknak.",
+    supportingText: "A vendég gyorsan szeretne képeket, információkat, árakat vagy kapcsolatfelvételi lehetőséget találni. Ebben segítünk tiszta felépítéssel, kényelmes mobilnézettel és frissíthető tartalommal.",
     features: [
-      "Egyedi űrlapok és adatkezelés",
-      "Belső admin- vagy dashboard felületek",
-      "Egyszerű jogosultsági logika",
-      "Exportok, értesítések és folyamatlépések",
+      "Galéria, bemutatkozás és fontos információk",
+      "Kapcsolat, foglalási vagy érdeklődési irány",
+      "Programok, látnivalók vagy szolgáltatások bemutatása",
+      "Frissíthető képek, szövegek és szezonális információk",
     ],
-    chips: ["webes eszköz", "workflow", "dashboard", "adatkezelés"],
-    ctaLabel: "Beszéljünk a projektről",
+    chips: ["szállás", "turizmus", "galéria", "érdeklődés"],
+    ctaLabel: "20 perces ingyenes átbeszélés",
   },
 ];

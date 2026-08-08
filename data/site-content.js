@@ -9,148 +9,105 @@ export const siteContent = {
     ],
     languages: ["HU", "EN", "DE"],
   },
-
+  seo: {
+    title: "CodeNest – Weboldalak, amiket használni is lehet",
+    description: "Érthető, szerkeszthető weboldalakat készítünk kisebb önkormányzatoknak, intézményeknek, szálláshelyeknek és helyi vállalkozásoknak.",
+    ogTitle: "CodeNest – Weboldalak, amiket használni is lehet",
+    ogDescription: "Ketten építünk átlátható, frissíthető weboldalakat és online alapokat kisebb szervezeteknek.",
+    canonicalUrl: "https://codenest.hu/",
+  },
   hero: {
-    headline: "Webes rendszerek, amiket nem csak nézni lehet, hanem használni is.",
-    subheadline:
-      "Szerkeszthető weboldalakat, adminfelületeket és egyedi digitális megoldásokat építünk önkormányzatoknak, intézményeknek és kisvállalkozásoknak.",
-    primaryCta: "Beszéljünk a projektről",
-    secondaryCta: "Megnézem, mit építünk",
+    headline: "Weboldalak, amiket nem csak nézni lehet, hanem használni is.",
+    subheadline: "Kisebb önkormányzatoknak, intézményeknek, szálláshelyeknek és helyi vállalkozásoknak építünk érthető, szerkeszthető weboldalakat: olyan online alapot, amit átadás után is könnyű frissíteni.",
+    primaryCta: "20 perces ingyenes átbeszélés",
+    secondaryCta: "Megnézem, miben segítünk",
     primaryCtaHref: "#kapcsolat",
     secondaryCtaHref: "#mit-epitunk",
   },
-
   problem: {
-    title: "A legtöbb weboldal elkészül. Aztán nehéz használni.",
-    text:
-      "Sok szervezetnek nem újabb statikus bemutatkozó oldalra van szüksége, hanem olyan rendszerre, amit a csapat tényleg tud használni: híreket kezelni, dokumentumokat feltölteni, űrlapokat fogadni, folyamatokat követni és biztonságosan működtetni.",
+    title: "A jó weboldal nem csak elkészül. Utána is használható marad.",
+    text: "Sok oldal az indulás napján még rendben van, pár hónappal később viszont már nehéz hozzányúlni. Elavulnak a hírek, szétszóródnak a dokumentumok, a látogató nem találja a lényeget, az ügyfél pedig nem tudja, mit hol lehet frissíteni.",
     painPoints: [
-      {
-        title: "Nehéz frissíteni",
-        text: "A tartalom elavul, mert minden módosítás külön utánajárást vagy fejlesztői segítséget igényel.",
-      },
-      {
-        title: "Szétszórt tartalmak",
-        text: "Dokumentumok, hírek és információk több helyen élnek, ezért nehéz rendben tartani őket.",
-      },
-      {
-        title: "E-mail káosz",
-        text: "Ajánlatkérések, jelentkezések és bejelentések könnyen elvesznek a beérkező üzenetek között.",
-      },
-      {
-        title: "Nincs biztos átadás",
-        text: "A weboldal elkészül, de nem mindig egyértelmű, ki kezeli, hogyan frissül és ki tartja üzemben.",
-      },
+      { title: "Elavul a tartalom", text: "A hírek, képek, események vagy dokumentumok nem frissülnek, mert túl körülményes hozzányúlni az oldalhoz." },
+      { title: "Nehéz megtalálni a lényeget", text: "A látogató nem találja gyorsan az elérhetőséget, a nyitvatartást, a dokumentumot vagy az érdeklődés következő lépését." },
+      { title: "Telefonon kényelmetlen", text: "A legtöbben mobilról érkeznek, de a tartalom sokszor apró, zsúfolt vagy rossz sorrendben jelenik meg." },
+      { title: "Nincs tiszta átadás", text: "Az oldal elkészül, de nem egyértelmű, hol vannak a hozzáférések, mit lehet szerkeszteni és ki segít, ha később változtatni kell." },
     ],
     beforeAfter: {
-      before: ["Szétszórt tartalmak", "Fejlesztőfüggőség", "E-mail káosz"],
-      after: ["Szerkeszthető admin", "Rendezett tartalom", "Átlátható folyamat"],
+      before: ["Elavuló tartalom", "Fejlesztőfüggő apró módosítások", "Kényelmetlen mobilnézet"],
+      after: ["Egyszerű frissítés", "Átlátható tartalmi szerkezet", "Telefonról is kényelmes használat"],
     },
     points: [
-      "A tartalom legyen szerkeszthető fejlesztői segítség nélkül.",
-      "Az adminfelület legyen átlátható azoknak is, akik naponta használják.",
-      "A weboldal kapcsolódjon a valódi munkafolyamatokhoz.",
-      "Az indulás után is legyen karbantartás, mentés és támogatás.",
+      "A látogató találja meg gyorsan, amit keres.",
+      "A fontos szövegek, képek, dokumentumok és események legyenek később is frissíthetők.",
+      "Az oldal telefonról is legyen kényelmesen használható.",
+      "Az átadás legyen érthető: hozzáférések, frissítés, élesítés és következő lépések.",
     ],
-    solution:
-      "Mi olyan webes rendszereket építünk, amelyek nemcsak jól néznek ki, hanem átadás után is használhatók, szerkeszthetők és hosszú távon üzemeltethetők maradnak.",
+    solution: "Olyan weboldalakat készítünk, amelyek nem csak első ránézésre szépek, hanem a mindennapi használatban is segítenek: a látogatónak eligazodni, az ügyfélnek pedig frissíteni, átadni és hosszabb távon működtetni.",
   },
-
   process: {
-    title: "Átgondolt folyamat, felesleges körök nélkül.",
-    intro:
-      "Kis csapatként közvetlenül dolgozunk veled: először megértjük, mire kell a rendszer, utána építünk hozzá használható szerkezetet, felületet és működést.",
+    title: "Egyszerű folyamat, érthető lépésekkel.",
+    intro: "Nem bonyolítjuk túl. Először közösen átnézzük, mire kell az oldal, kik fogják használni, milyen tartalmak fontosak, és mi az, amit induláskor tényleg érdemes megépíteni.",
     steps: [
-      {
-        title: "Megértjük",
-        text: "Megismerjük a célt, a felhasználókat, a jelenlegi problémákat és azt, hogy mit kell a rendszernek megoldania.",
-      },
-      {
-        title: "Megtervezzük",
-        text: "Felépítjük az oldalstruktúrát, a tartalomtípusokat, az adminlogikát és a szükséges funkciókat.",
-      },
-      {
-        title: "Megépítjük",
-        text: "Elkészítjük a weboldalt, adminfelületet, űrlapokat, integrációkat és a szükséges technikai alapokat.",
-      },
-      {
-        title: "Átadjuk",
-        text: "Betanítunk, dokumentálunk, átadjuk a hozzáféréseket, és segítünk az éles indulásban.",
-      },
-      {
-        title: "Üzemeltetjük",
-        text: "Igény esetén gondoskodunk a hostingról, mentésekről, frissítésekről, supportról és továbbfejlesztésről.",
-      },
+      { title: "Átbeszéljük", text: "Egy rövid első beszélgetésben megértjük, kinek készül az oldal, mi nem működik most, és milyen információkat kell könnyen megtalálni." },
+      { title: "Rendezzük", text: "Összerakjuk az oldal felépítését: milyen menüpontok, szövegek, képek, dokumentumok, űrlapok vagy elérhetőségek kellenek." },
+      { title: "Megépítjük", text: "Elkészítjük a weboldalt és ha szükséges, a szerkeszthető felületet is, hogy később ne minden apróság miatt kelljen fejlesztőhöz fordulni." },
+      { title: "Átadjuk", text: "Megmutatjuk, mit hol lehet frissíteni, átadjuk a hozzáféréseket, és segítünk az éles indulásnál." },
+      { title: "Segítünk utána", text: "Ha később kérdés, kisebb módosítás vagy technikai beállítás merül fel, nem tűnünk el az indulás után sem." },
     ],
   },
-
   whyCodeNest: {
     title: "Miért CodeNest?",
-    intro:
-      "Nem nagy ügynökségi gépezetként dolgozunk. Két emberrel, közvetlen kommunikációval és gyakorlati szemlélettel építünk webes rendszereket.",
+    intro: "Ketten dolgozunk, ezért a projekt nem vész el egy nagy ügynökségi folyamatban. Közvetlenül egyeztetünk, érthetően építünk, és arra figyelünk, hogy az oldal átadás után se legyen zárt doboz.",
     items: [
-      {
-        title: "Közvetlen kommunikáció",
-        text: "Nem account manageren keresztül dolgozol. Azokkal beszélsz, akik ténylegesen értik és építik a rendszert.",
-      },
-      {
-        title: "Szerkeszthető admin",
-        text: "Nem zárt dobozt adunk át. A cél, hogy az ügyfél is tudja kezelni azokat a tartalmakat és folyamatokat, amelyek a mindennapi működéshez kellenek.",
-      },
-      {
-        title: "Üzemeltethető alapok",
-        text: "A hosting, backup, frissítések, hozzáférések és support nem utólagos gondolatok, hanem a rendszer részei.",
-      },
+      { title: "Közvetlenül velünk beszélsz", text: "Nem több közvetítőn keresztül megy az egyeztetés. Azokkal beszélsz, akik az oldalt ténylegesen összerakják." },
+      { title: "Nem bonyolítjuk túl", text: "A cél nem az, hogy minél nagyobbnak hangozzon a projekt, hanem hogy az oldal érthető, használható és fenntartható legyen." },
+      { title: "Átadható működés", text: "Figyelünk arra, hogy a domain, hozzáférések, frissítés, élesítés és külső szolgáltatói fiókok ne legyenek homályosak az átadás után." },
     ],
   },
-
   scope: {
-    title: "Minden projekt scope alapján indul.",
-    text:
-      "Nincsenek publikus, fix csomagáraink. Először megértjük, mire kell használni a webes rendszert, majd ehhez igazítjuk a feladat méretét, technikai alapját és az átadás utáni működést.",
+    title: "Először a feladatot tisztázzuk, nem csomagot árulunk.",
+    text: "Nincsenek nyilvános csomagáraink, mert más kell egy helyi szolgáltatónak, egy szálláshelynek és egy önkormányzati oldalnak. Először átnézzük, mire van szükség, mi fér bele az első verzióba, és mi maradhat későbbre.",
     summaryPoints: [
-      "Az ajánlat a szükséges weboldalra, adminfelületre, tartalmi szerkezetre és munkafolyamatokra épül.",
-      "Nem kell mindent egyszerre megépíteni: különválasztjuk az induláshoz fontos részeket és a későbbi bővítéseket.",
-      "Az egyeztetés után érthető, átlátható javaslatot adunk a feladatra.",
+      "Az ajánlat a valódi feladatra épül: milyen oldalak, tartalmak, frissítési igények és kapcsolatfelvételi pontok kellenek.",
+      "Nem kell mindent egyszerre megépíteni. Különválasztjuk az induláshoz fontos részeket és a későbbi ötleteket.",
+      "Az egyeztetés után egyszerű, érthető javaslatot adunk a következő lépésre.",
     ],
-    includesTitle: "Mi alapján tisztázzuk?",
+    includesTitle: "Mit tisztázunk először?",
     includes: [
-      "Funkciók és oldaltípusok",
-      "Adminfelület és jogosultságok",
-      "Tartalomtípusok és szerkesztési logika",
-      "Űrlapok, értesítések és workflow-k",
-      "Hosting, mentés és support",
-      "Későbbi bővítés lehetőségei",
+      "Milyen látogatóknak készül az oldal",
+      "Milyen információkat kell gyorsan megtalálni",
+      "Mit kell később frissíteni",
+      "Kell-e szerkeszthető felület",
+      "Domain, DNS, SSL és deploy beállítások támogatása",
+      "Külső szolgáltatói fiókok beállítása vagy átadása",
     ],
-    ctaLabel: "Beszéljünk a projektről",
+    ctaLabel: "20 perces ingyenes átbeszélés",
     ctaHref: "#kapcsolat",
   },
-
   contact: {
-    title: "Beszéljünk a projektedről.",
-    text:
-      "Nem kell kész specifikáció. Írd le röviden, min dolgoztok, mire lenne szükség, mi pedig segítünk kitalálni a jó következő lépést.",
+    title: "Kérj 20 perces ingyenes weboldal-átbeszélést.",
+    text: "Nem kell kész brief vagy hosszú specifikáció. Írj pár mondatot arról, milyen oldalt szeretnél, mi nem működik most, vagy mit kellene könnyebben frissíteni. Mi segítünk megtalálni a jó következő lépést.",
     emailLabel: "E-mail",
     email: "info.codenest.hu@gmail.com",
     formLabels: {
       name: "Név",
       email: "E-mail",
-      projectType: "Projekt típusa",
+      projectType: "Mire lenne szükség?",
       message: "Üzenet",
-      submit: "Beszéljünk a projektről",
+      submit: "Kérem az átbeszélést",
     },
     projectTypes: [
-      "Önkormányzati / intézményi portál",
-      "Adminos üzleti weboldal",
-      "Egyedi webes eszköz",
-      "Meglévő oldal újragondolása",
-      "Még nem tudom",
+      "Önkormányzati vagy intézményi oldal",
+      "Helyi vállalkozás / szakember weboldala",
+      "Szálláshely vagy turisztikai oldal",
+      "Meglévő weboldal újragondolása",
+      "Még nem tudom pontosan",
     ],
   },
-
   footer: {
     brandName: "CodeNest",
-    tagline: "Webes rendszerek, amiket használni is lehet.",
+    tagline: "Weboldalak, amiket használni is lehet.",
     links: [
       { label: "Mit építünk", href: "#mit-epitunk" },
       { label: "Munkák", href: "#munkak" },
